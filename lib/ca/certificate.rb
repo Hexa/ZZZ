@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 module CA
-  class Certificate
-    def initialize()
-      super
+  class Certificate < X509
+    def initialize
+      super(:certificate)
     end
 
     def method_missing(name, *args)
@@ -12,7 +12,7 @@ module CA
       when /^(subject|issuer)=$/
         subject = CA::Utils::encode_subject(args[0])
         @x509.__send__(name, subject)
-      when /^(not_(before|after)=$/
+      when /^(not_(before|after))=$/
         datetime = CA::Utils::encode_datetime(args[0])
         @x509.__send__(name, datetime)
       when /^(private_key)|(pkey)$/
@@ -31,6 +31,7 @@ module CA
     def certificate=(pem)
       @x509 = CA::Utils::gen_x509_object(pem)
     end
+
     def signature_algorithm
       case @x509.signature_algorithm
       when 'itu-t'
@@ -38,6 +39,10 @@ module CA
       else
         @x509.signature_algorithm
       end
+    end
+
+    def extensions=(extensions)
+      @x509.extensions = CA::Utils::encode_extensions(extensions, @certificates)
     end
   end
 end
