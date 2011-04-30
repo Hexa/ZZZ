@@ -3,9 +3,11 @@
 module CA
   class X509
 
+    DEFAULT_SIGNATURE_ALGIRITHM = 'SHA1'
     attr_reader :private_key
 
     def initialize(type)
+      @certificates = {}
       @x509 = CA::Utils::new(type)
     end
 
@@ -23,6 +25,8 @@ module CA
 
     def gen_private_key(params = {})
       @private_key = CA::Utils::gen_pkey(params)
+      @x509.public_key = @private_key
+      @private_key
     end
 
     def private_key=(private_key)
@@ -66,6 +70,57 @@ module CA
 
     def subject_request
       @certificates[:subject_request]
+    end
+
+    def extensions=(extensions, params = {})
+      params[:certificates] = @certificates
+      @x509.extensions = CA::Utils::encode_extensions(extensions, params)
+    end
+
+    def certificate
+      @x509
+    end
+
+    def sign(type, signer, params = {})
+      data = params[:certificate] || params[:crl] || self
+      serial = params[:serial]
+
+      case type
+      when :certificate
+        certificate_sign(signer, data, serial)
+      when :request
+        request_sign(signer)
+      when :crl
+        crl_sign(signer, data)
+      else
+        raise(Error, "Unexpected type: #{type}.")
+      end
+    end
+
+    private
+    def certificate_sign(signer, data, serial)
+      data.serial = serial
+      data.issuer = signer.subject
+      signature_algorithm = data.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM
+      data.certificate.sign(
+        signer.private_key,
+        OpenSSL::Digest.new(signature_algorithm))
+      data
+    end
+
+    def crl_sign(signer, data)
+      data.issuer = signer.subject
+      data.crl.sign(
+        signer.private_key,
+        OpenSSL::Digest.new(data.signature_algorithm))
+      data.crl
+    end
+
+    def request_sign(signer)
+      signer.sign(
+        signer.private_key,
+        OpenSSL::Digest.new(signer.signature_algorithm))
+      signer.request
     end
   end
 end

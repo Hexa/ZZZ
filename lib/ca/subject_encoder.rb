@@ -1,11 +1,9 @@
 #!/opt/local/bin/ruby
 # -*- coding: utf-8 -*-
 
-module RbCertificate
-
+module CA
   class SubjectEncoder
     require 'openssl'
-    include OpenSSL
 
     attr_reader :subject
 
@@ -35,7 +33,7 @@ module RbCertificate
     end
 
     def encode
-      @encoded_subject = X509::Name.new
+      @encoded_subject = OpenSSL::X509::Name.new
       @subject.each do |element|
         element.each_pair do |oid, value|
           @encoded_subject.add_entry(oid, value)

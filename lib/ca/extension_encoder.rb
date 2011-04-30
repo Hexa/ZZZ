@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 module CA
-  class Extension
+  class ExtensionEncoder
     require 'openssl'
-    include OpenSSL
 
     def initialize(extensions = {})
       @extensions = extensions
-      @extension_factory = X509::ExtensionFactory.new
+      @extension_factory = OpenSSL::X509::ExtensionFactory.new
     end
 
     def subject_request(element)
@@ -25,14 +24,14 @@ module CA
         @extension_factory.subject_request
       when /^subject_request=$/
         request = if args[0].instance_of? String
-                        X509::Request.new(args[0])
+                        OpenSSL::X509::Request.new(args[0])
                       else
                         args[0]
                       end
         @extension_factory.__send__(name, request)
       when /^(subject|issuer)_certificate=$/
         certificate = if args[0].instance_of? String
-                        X509::Certificate.new(args[0])
+                        OpenSSL::X509::Certificate.new(args[0])
                       else
                         args[0]
                       end
@@ -104,20 +103,20 @@ module CA
     def encode_bit_string_type(key, values, critical)
       extension = ''
       values.each do |value|
-        extension << ASN1::BitString(value.to_i(2).chr).to_der
+        extension << OpenSSL::ASN1::BitString(value.to_i(2).chr).to_der
       end
       X509::Extension.new(key, extension, critical)
     end
 
     ## oid の取得
     def get_oid(key)
-      X509::Extension.new(key, 'temporary').oid
+      OpenSSL::X509::Extension.new(key, 'temporary').oid
     end
 
     ## crlNumber を ASN.1 形式にエンコード
     def encode_crl_number(key, values, critical)
-      extension = ASN1::Integer(values[0]).to_der
-      X509::Extension.new(key, extension, critical)
+      extension = OpenSSL::ASN1::Integer(values[0]).to_der
+      OpenSSL::X509::Extension.new(key, extension, critical)
     end
 
     ## authorityKeyIdentifier を ASN.1 形式にエンコード
@@ -127,17 +126,17 @@ module CA
         case value
         when /^keyid:true$/i
           public_key =  get_public_key(@extension_factory)
-          v = Digest::SHA1.digest(public_key.to_der)
-          key_id = ASN1::ASN1Data.new(
+          v = OpenSSL::Digest::SHA1.digest(public_key.to_der)
+          key_id = OpenSSL::ASN1::ASN1Data.new(
             v,
-            ASN1::EOC,
+            OpenSSL::ASN1::EOC,
             :CONTEXT_SPECIFIC).to_der
-          extension = ASN1::Sequence([key_id]).to_der
+          extension = OpenSSL::ASN1::Sequence([key_id]).to_der
         else
           extension = value
         end
       end
-      X509::Extension.new(key, extension, critical)
+      OpenSSL::X509::Extension.new(key, extension, critical)
     end
 
     def get_public_key(extension_factory)

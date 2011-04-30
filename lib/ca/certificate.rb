@@ -3,6 +3,9 @@
 
 module CA
   class Certificate < X509
+
+    DEFAULT_SERIAL = 1
+
     def initialize
       super(:certificate)
     end
@@ -25,7 +28,10 @@ module CA
     end
 
     def sign(params)
-      CA::Utils::sign(:certificate, params)
+      signer = params[:signer] || self
+      params[:data] ||= self
+      params[:serial] ||= DEFAULT_SERIAL
+      super(:certificate, signer, params)
     end
 
     def certificate=(pem)
@@ -39,10 +45,6 @@ module CA
       else
         @x509.signature_algorithm
       end
-    end
-
-    def extensions=(extensions)
-      @x509.extensions = CA::Utils::encode_extensions(extensions, @certificates)
     end
   end
 end

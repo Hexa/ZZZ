@@ -3,6 +3,7 @@
 
 module CA
   require 'openssl'
+  require 'time'
 
   class Utils
     DEFAULT_KEY_SIZE = 1024
@@ -13,7 +14,6 @@ module CA
       key_size = params[:key_size] || DEFAULT_KEY_SIZE
       exponent = params[:exponent] || DEFAULT_PUBLIC_EXPONENT
       public_key_algorithm = params[:public_key_algorithm] || DEFAULT_PUBLIC_KEY_ALGORITHM
-
       case public_key_algorithm
       when :RSA
         OpenSSL::PKey::RSA.new(key_size, exponent)
@@ -33,8 +33,12 @@ module CA
       end
     end
 
-    def self.encode_extensions(extensions, params = {:certificates => {}})
-      extension_encoder = ExtensionEncoder.new
+    def self.encode_datetime(datetime)
+      Time.parse(datetime)
+    end
+
+    def self.encode_extensions(extensions, params = {})
+      extension_encoder = CA::ExtensionEncoder.new
       extensions.each_pair do |oid, values|
         critical = values[:critical] || false
         extension_encoder.add(
@@ -51,11 +55,11 @@ module CA
       extension_encoder.encode
     end
 
-    def self.encode_subject(subjcet)
+    def self.encode_subject(subject)
       if subject.instance_of?(OpenSSL::X509::Name)
         subject
       else
-        subject_encoder = SubjectEncoder.new(subject)
+        subject_encoder = CA::SubjectEncoder.new(subject)
         subject_encoder.encode
       end
     end
@@ -95,47 +99,6 @@ module CA
       else
         raise(Error, "Unexpected type: pem.")
       end
-    end
-
-    def self.sign(type, signer, params)
-      data = params[:certificate] || params[:crl]
-      serial = params[:serial]
-
-      case type
-      when :certificate
-        certificate_sign(signer, data, serial)
-      when :request
-        request_sign(signer)
-      when :crl
-        crl_sign(signer, data)
-      else
-        raise(Error, "Unexpected type: #{type}.")
-      end
-    end
-
-    private
-    def self.certificate_sign(signer, data, serial)
-      data.serial = serial
-      data.issuer = signer.subject
-      data.certificate.sign(
-        signer.private_key,
-        OpenSSL::Digest.new(data.signature_algorithm))
-      data.certificate
-    end
-
-    def self.crl_sign(signer, data)
-      data.issuer = signer.subject
-      data.crl.sign(
-        signer.private_key,
-        OpenSSL::Digest.new(data.signature_algorithm))
-      data.crl
-    end
-
-    def self.request_sign(signer)
-      signer.sign(
-        signer.private_key,
-        OpenSSL::Digest.new(signer.signature_algorithm))
-      signer.request
     end
   end
 end
