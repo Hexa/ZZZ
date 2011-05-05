@@ -26,6 +26,7 @@ module CA
     def gen_private_key(params = {})
       @private_key = CA::Utils::gen_pkey(params)
       @x509.public_key = @private_key
+      @private_key.class
       @private_key
     end
 
@@ -82,15 +83,18 @@ module CA
     end
 
     def sign(type, signer, params = {})
-      data = params[:certificate] || params[:crl] || self
-      serial = params[:serial]
-
       case type
       when :certificate
+        data = params[:certificate] || self
+        data.version = params[:version]
+        serial = params[:serial]
         certificate_sign(signer, data, serial)
       when :request
+        signer.version = params[:version]
         request_sign(signer)
       when :crl
+        data = params[:crl] || self
+        data.version = params[:version]
         crl_sign(signer, data)
       else
         raise(Error, "Unexpected type: #{type}.")
@@ -110,16 +114,18 @@ module CA
 
     def crl_sign(signer, data)
       data.issuer = signer.subject
+      signature_algorithm = data.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM
       data.crl.sign(
         signer.private_key,
-        OpenSSL::Digest.new(data.signature_algorithm))
+        OpenSSL::Digest.new(signature_algorithm))
       data.crl
     end
 
     def request_sign(signer)
-      signer.sign(
+      signature_algorithm = signer.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM
+      signer.request.sign(
         signer.private_key,
-        OpenSSL::Digest.new(signer.signature_algorithm))
+        OpenSSL::Digest.new(signature_algorithm))
       signer.request
     end
   end

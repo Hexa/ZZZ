@@ -5,6 +5,7 @@ module CA
   class Certificate < X509
 
     DEFAULT_SERIAL = 1
+    DEFAULT_VERSION = 2
 
     def initialize
       super(:certificate)
@@ -12,18 +13,13 @@ module CA
 
     def method_missing(name, *args)
       case name.to_s
-      when /^(subject|issuer)=$/
-        subject = CA::Utils::encode_subject(args[0])
-        @x509.__send__(name, subject)
-      when /^(not_(before|after))=$/
+      when /^not_(before|after)=$/
         datetime = CA::Utils::encode_datetime(args[0])
         @x509.__send__(name, datetime)
       when /^(private_key)|(pkey)$/
         @private_key
-      when /^.+=$/
-        @x509.__send__(name, args[0])
-      when /^.+$/
-        @x509.__send__(name)
+      else
+        super
       end
     end
 
@@ -31,6 +27,7 @@ module CA
       signer = params[:signer] || self
       params[:data] ||= self
       params[:serial] ||= DEFAULT_SERIAL
+      params[:version] ||= DEFAULT_VERSION
       super(:certificate, signer, params)
     end
 

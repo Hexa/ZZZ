@@ -34,6 +34,7 @@ module CA
     end
 
     def self.encode_datetime(datetime)
+      p datetime
       Time.parse(datetime)
     end
 
@@ -59,6 +60,7 @@ module CA
       if subject.instance_of?(OpenSSL::X509::Name)
         subject
       else
+        p subject
         subject_encoder = CA::SubjectEncoder.new(subject)
         subject_encoder.encode
       end
@@ -99,6 +101,13 @@ module CA
       else
         raise(Error, "Unexpected type: pem.")
       end
+    end
+
+    def self.revoked(serial, revoked_time)
+      revoked = OpenSSL::X509::Revoked.new
+      revoked.serial = serial
+      revoked.time = CA::Utils::encode_datetime(revoked_time)
+      revoked
     end
   end
 end

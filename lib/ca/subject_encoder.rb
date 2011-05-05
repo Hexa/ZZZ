@@ -15,16 +15,11 @@ module CA
       @subject
     end
 
-    # 追加された順番を保持
     def add(oid, value)
       @subject <<  {oid => value}
     end
 
-    ## 指定した oid を全て削除
     def delete(oid)
-      # [{oid => value},
-      #  {oid => value}, 
-      #  {oid => value}]
       subject = []
       @subject.each do |element|
         subject << element unless element.include?(oid)
@@ -43,8 +38,6 @@ module CA
     end
 
     def encoded_subject
-      # #encode 前の呼び出しは例外
-      raise(Error, "") if @encoded_subject.nil?
       @encoded_subject
     end
   end
