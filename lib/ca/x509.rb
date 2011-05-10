@@ -16,6 +16,8 @@ module CA
       when /^(subject|issuer)=$/
         subject = CA::Utils::encode_subject(args[0])
         @x509.__send__(name, subject)
+      when /signature_algorithm=/
+        @signature_algorithm = args[0]
       when /^.+=$/
         @x509.__send__(name, args[0])
       when /^.+$/
@@ -26,7 +28,6 @@ module CA
     def gen_private_key(params = {})
       @private_key = CA::Utils::gen_pkey(params)
       @x509.public_key = @private_key
-      @private_key.class
       @private_key
     end
 
@@ -38,7 +39,6 @@ module CA
                      end
     end
 
-    ## 秘密鍵を暗号化して取得
     def encrypted_private_key(params)
       algorithm = params[:algorithm]
       passphrase = params[:passphrase]
@@ -55,7 +55,6 @@ module CA
       end
     end
 
-    ## この証明書を発行する CA の証明書の指定
     def issuer_certificate=(certificate)
       @certificates[:issuer_certificate] = CA::Utils::gen_x509_object(certificate)
     end

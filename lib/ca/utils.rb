@@ -34,7 +34,6 @@ module CA
     end
 
     def self.encode_datetime(datetime)
-      p datetime
       Time.parse(datetime)
     end
 
@@ -60,7 +59,6 @@ module CA
       if subject.instance_of?(OpenSSL::X509::Name)
         subject
       else
-        p subject
         subject_encoder = CA::SubjectEncoder.new(subject)
         subject_encoder.encode
       end
