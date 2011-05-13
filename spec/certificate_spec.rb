@@ -13,11 +13,11 @@ describe CA::Certificate do
    end
 
     it "#gen_private_key は RAS Private Key を返すこと" do
-      @certificate.gen_private_key.to_s.should =~ /^-----BEGIN RSA PRIVATE KEY-----/
+      @certificate.gen_private_key.to_s.should =~ /^-----BEGIN RSA PRIVATE KEY-----.+-----END RSA PRIVATE KEY-----$/m
     end
 
     it "#gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA) は DSA Private Key を返すこと" do
-      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA).to_s.should =~ /^-----BEGIN DSA PRIVATE KEY-----/
+      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA).to_s.should =~ /^-----BEGIN DSA PRIVATE KEY-----.+-----END DSA PRIVATE KEY-----$/m
     end
 
     it "#private_key=(rsa_private_key) は OpenSSL::PKey::RSA オブジェクトを返すこと" do
@@ -40,7 +40,7 @@ describe CA::Certificate do
       @certificate.not_after = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]
       @certificate.subject = subject
-      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA).to_s.should =~ /^-----BEGIN DSA PRIVATE KEY-----/
+      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA).to_s.should =~ /^-----BEGIN DSA PRIVATE KEY-----.+-----END DSA PRIVATE KEY-----$/m
       @certificate.sign(:serial => 1).class.should == CA::Certificate
     end
 
@@ -55,7 +55,7 @@ describe CA::Certificate do
       @certificate.not_after = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]
       @certificate.subject = subject
-      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA).to_s.should =~ /^-----BEGIN DSA PRIVATE KEY-----/
+      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA).to_s.should =~ /^-----BEGIN DSA PRIVATE KEY-----.+/m
       @certificate.sign(:serial => 1)
       @certificate.signature_algorithm.should == 'dsaWithSHA1'
     end
