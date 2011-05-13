@@ -117,7 +117,7 @@ module CA
       data.crl.sign(
         signer.private_key,
         OpenSSL::Digest.new(signature_algorithm))
-      data.crl
+      data
     end
 
     def request_sign(signer)
@@ -125,7 +125,7 @@ module CA
       signer.request.sign(
         signer.private_key,
         OpenSSL::Digest.new(signature_algorithm))
-      signer.request
+      signer
     end
   end
 end

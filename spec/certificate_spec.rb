@@ -50,7 +50,6 @@ describe CA::Certificate do
     end
 
     it "#signature_algorithm は署名に使用したアルゴリズムを返すこと" do
-      pending
       @certificate.not_before = '2010/09/21 00:00:00'
       @certificate.not_after = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]

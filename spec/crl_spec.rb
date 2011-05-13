@@ -5,6 +5,7 @@ require 'rspec'
 require 'ca/utils'
 require 'ca/crl'
 require 'time'
+require 'openssl'
 
 describe CA::CRL do
   context "インスタンスを生成した場合" do
@@ -49,7 +50,6 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
     end
 
     it "#sign は CA::CRL オブジェクトを返すこと" do
-      pending('mock')
       rsa_private_key = <<-PrivateKey
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQD4GGnFOZay4OlHKRFZUP0o2IbNYFpkkE52iTslwy9HriXLA1rU
@@ -68,10 +68,16 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
       PrivateKey
 
+      signer = mock('signer')
+      name = OpenSSL::X509::Name.new
+      name.add_entry('CN', 'cn')
+      signer.should_receive(:subject).and_return(name)
+      private_key = OpenSSL::PKey::RSA.new(rsa_private_key)
+      signer.should_receive(:private_key).and_return(private_key)
       @crl.last_update= '2010/09/21 00:00:00'
       @crl.next_update = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]
-      @crl.sign(:signer => ca).class.should == CA::CRL
+      @crl.sign(:signer => signer).class.should == CA::CRL
     end
 
     after do
