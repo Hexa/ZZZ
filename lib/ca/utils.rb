@@ -90,14 +90,13 @@ module CA
 
     def self.get_asn1_type(pem)
       case pem
-      when /^-----BEGIN CERTIFICATE-----/
+      when /^-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----$/m
         :certificate
-      when /^-----BEGIN CERTIFICATE REQUEST-----/
+      when /^-----BEGIN CERTIFICATE REQUEST-----.+-----END CERTIFICATE REQUEST-----$/m
         :request
-      when /^-----BEGIN X509 CRL-----/
+      when /^-----BEGIN X509 CRL-----.+-----END X509 CRL-----$/m
         :crl
       else
-        raise(Error, "Unexpected type: pem.")
       end
     end
 
