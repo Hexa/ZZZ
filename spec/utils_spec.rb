@@ -2,35 +2,35 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'ca/utils'
+require 'zzz/ca/utils'
 require 'time'
 require 'openssl'
 
-describe CA::Utils do
+describe ZZZ::CA::Utils do
   context "インスタンスを生成する場合" do
     it ".new(:certificate) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
-      CA::Utils::new(:certificate).class.should == OpenSSL::X509::Certificate
+      ZZZ::CA::Utils::new(:certificate).class.should == OpenSSL::X509::Certificate
     end
 
     it ".new(:request) は OpenSSL::X509::Request オブジェクトを返すこと" do
-      CA::Utils::new(:request).class.should == OpenSSL::X509::Request
+      ZZZ::CA::Utils::new(:request).class.should == OpenSSL::X509::Request
     end
 
     it ".new(:crl) は OpenSSL::X509::CRL オブジェクトを返すこと" do
-      CA::Utils::new(:crl).class.should == OpenSSL::X509::CRL
+      ZZZ::CA::Utils::new(:crl).class.should == OpenSSL::X509::CRL
     end
   end
 
   context "時間をエンコードする場合" do
     it ".encode_datetime(\"2011/05/10 00:00:00\") は 2011/05/10 00:00:00 の Time オブジェクトを返すこと" do
       datetime = "2011/05/10 00:00:00"
-      CA::Utils::encode_datetime(datetime).should == Time.parse(datetime)
+      ZZZ::CA::Utils::encode_datetime(datetime).should == Time.parse(datetime)
     end
   end
 
   context "共通鍵暗号を使用する場合" do
     it ".cipher(\"AES256\") は OpenSSL::Cipher::Cipher オブジェクトを返すこと" do
-      CA::Utils::cipher("AES256").class.should == OpenSSL::Cipher::Cipher
+      ZZZ::CA::Utils::cipher("AES256").class.should == OpenSSL::Cipher::Cipher
     end
   end
 
@@ -53,7 +53,7 @@ KCddKUmpfreEi3C5cISGn208mCX4Kl7BNiFQB79W/HfQnfuDaJtKpN0ZddUkKYwx
 yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
       PrivateKey
-      CA::Utils::get_pkey_object(rsa_private_key).class.should == OpenSSL::PKey::RSA
+      ZZZ::CA::Utils::get_pkey_object(rsa_private_key).class.should == OpenSSL::PKey::RSA
     end
   end
 
@@ -77,7 +77,7 @@ JO2h5womlEjvvb3FWyVGGYAue+hPGDSZ//qXgahOOSscl9+HgwIZp0GA+KIgOPim
 UPt704SNSQNfqQ==
 -----END CERTIFICATE-----
       Certificate
-      CA::Utils::gen_x509_object(certificate_pem).class.should == OpenSSL::X509::Certificate
+      ZZZ::CA::Utils::gen_x509_object(certificate_pem).class.should == OpenSSL::X509::Certificate
     end
   end
 
@@ -95,13 +95,13 @@ Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 CRL-----
       CRL
-      CA::Utils::get_asn1_type(crl_pem).should == :crl
+      ZZZ::CA::Utils::get_asn1_type(crl_pem).should == :crl
     end
   end
 
   context "証明書を失効させる場合" do
     it ".revoked(serial, time) は OpenSSL::X509::Revoked オブジェクトを返すこと" do
-      CA::Utils::revoked(1, Time.now.to_s).class.should == OpenSSL::X509::Revoked
+      ZZZ::CA::Utils::revoked(1, Time.now.to_s).class.should == OpenSSL::X509::Revoked
     end
   end
 end

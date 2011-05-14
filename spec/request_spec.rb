@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'ca/utils'
-require 'ca/request'
+require 'zzz/ca/utils'
+require 'zzz/ca/request'
 require 'time'
 
-describe CA::Request do
+describe ZZZ::CA::Request do
   context "インスタンスを生成した場合" do
     before do
-      @request = CA::Request.new
+      @request = ZZZ::CA::Request.new
    end
 
     it "#private_key=dsa_private_key を指定した後の #private_key は OpenSSL::PKey::DSA オブジェクトを返すこと" do
@@ -32,11 +32,11 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @request.private_key.class.should == OpenSSL::PKey::DSA
     end
 
-    it "#sign は CA::Request オブジェクトを返すこと" do
+    it "#sign は ZZZ::CA::Request オブジェクトを返すこと" do
       subject = [{'CN' => 'CA'}]
       @request.subject = subject
       @request.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA)
-      @request.sign.class.should == CA::Request
+      @request.sign.class.should == ZZZ::CA::Request
     end
 
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do

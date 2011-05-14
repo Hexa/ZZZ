@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'ca/utils'
-require 'ca/crl'
+require 'zzz/ca/utils'
+require 'zzz/ca/crl'
 require 'time'
 
-describe CA::CRL do
+describe ZZZ::CA::CRL do
   context "インスタンスを生成した場合" do
     before do
-      @crl = CA::CRL.new
+      @crl = ZZZ::CA::CRL.new
     end
 
     it "#crl=(crl_pem) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
@@ -48,7 +48,7 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
       @crl.next_update.should == Time.parse(time)
     end
 
-    it "#sign は CA::CRL オブジェクトを返すこと" do
+    it "#sign は ZZZ::CA::CRL オブジェクトを返すこと" do
       rsa_private_key = <<-PrivateKey
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQD4GGnFOZay4OlHKRFZUP0o2IbNYFpkkE52iTslwy9HriXLA1rU
@@ -76,7 +76,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       @crl.last_update= '2010/09/21 00:00:00'
       @crl.next_update = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]
-      @crl.sign(:signer => signer).class.should == CA::CRL
+      @crl.sign(:signer => signer).class.should == ZZZ::CA::CRL
     end
 
     after do

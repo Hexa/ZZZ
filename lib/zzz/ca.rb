@@ -9,6 +9,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "crl")
 require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "subject_encoder")
 require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "extension_encoder")
 
-
-module CA
+module ZZZ
+  module CA
+  end
 end

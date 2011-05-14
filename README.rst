@@ -1,6 +1,6 @@
-=======
-CA (仮)
-=======
+========
+ZZZ (仮)
+========
 
 :Author: Hexa
 :Mail:  hexa.diary@gmail.com
@@ -15,8 +15,8 @@ RbCertificate の設計では，証明書も CSR も CRL も同じように扱�
 
 CSR::
 
-  require './lib/ca'
-  include CA
+  require './lib/zzz/ca'
+  include ZZZ::CA
 
   request = Request.new
   request.gen_private_key
@@ -32,8 +32,8 @@ CSR::
 
 Certificate::
 
-  require './lib/ca'
-  include CA
+  require './lib/zzz/ca'
+  include ZZZ::CA
   certificate = Certificate.new
   certificate.gen_private_key
   certificate.not_before = '2010/09/21 00:00:00'
@@ -59,8 +59,8 @@ Certificate::
 
 CRL::
 
-  require './lib/ca'
-  include CA
+  require './lib/zzz/ca'
+  include ZZZ::CA
   crl = CRL.new
   crl.last_update = '2010/09/21 00:00:00'
   crl.next_update = '2010/10/21 00:00:00'
@@ -77,3 +77,4 @@ CRL::
 - 各クラスごとの役割は分ける
 - 重複は最小にする
 - 共通処理は Utils クラスへ
+- CA 以外も実装できるようにしておく

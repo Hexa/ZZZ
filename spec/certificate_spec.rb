@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'ca/utils'
-require 'ca/certificate'
+require 'zzz/ca/utils'
+require 'zzz/ca/certificate'
 require 'time'
 
-describe CA::Certificate do
+describe ZZZ::CA::Certificate do
   context "インスタンスを生成した場合" do
     before do
-      @certificate = CA::Certificate.new
+      @certificate = ZZZ::CA::Certificate.new
    end
 
     it "#gen_private_key は RAS Private Key を返すこと" do
@@ -54,13 +54,13 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       @certificate.not_after.should == Time.parse(time)
     end
 
-    it "#sign は CA::Certificate オブジェクトを返すこと" do
+    it "#sign は ZZZ::CA::Certificate オブジェクトを返すこと" do
       @certificate.not_before = '2010/09/21 00:00:00'
       @certificate.not_after = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]
       @certificate.subject = subject
       @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA)
-      @certificate.sign(:serial => 1).class.should == CA::Certificate
+      @certificate.sign(:serial => 1).class.should == ZZZ::CA::Certificate
     end
 
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
