@@ -4,12 +4,27 @@
 module CA
   class Request < X509
 
+    DEFAULT_VERSION = 1
+
     def initialize
       super(:request)
     end
 
     def method_missing(name, *args)
-      super
+      case name.to_s
+      when /^(private_key)|(pkey)$/
+        @private_key
+      else
+        super
+      end
+    end
+
+    def private_key=(private_key)
+      @private_key = if private_key.instance_of?(String)
+                       CA::Utils::get_pkey_object(private_key)
+                     else
+                       private_key
+                     end
     end
 
     def request=(pem)
@@ -22,6 +37,7 @@ module CA
 
     def sign(params = {})
       signer = params[:signer] || self
+      params[:version] ||= DEFAULT_VERSION
       super(:request, signer, params)
     end
 

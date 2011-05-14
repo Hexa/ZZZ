@@ -25,6 +25,14 @@ module CA
       end
     end
 
+    def private_key=(private_key)
+      @private_key = if private_key.instance_of?(String)
+                       CA::Utils::get_pkey_object(private_key)
+                     else
+                       private_key
+                     end
+    end
+
     def sign(params)
       signer = params[:signer] || self
       params[:data] ||= self

@@ -97,6 +97,7 @@ module CA
       when /^-----BEGIN X509 CRL-----.+-----END X509 CRL-----$/m
         :crl
       else
+        :not_found
       end
     end
 

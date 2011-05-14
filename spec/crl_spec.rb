@@ -5,7 +5,6 @@ require 'rspec'
 require 'ca/utils'
 require 'ca/crl'
 require 'time'
-require 'openssl'
 
 describe CA::CRL do
   context "インスタンスを生成した場合" do
@@ -68,7 +67,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
       PrivateKey
 
-      signer = mock('signer')
+      signer = double('signer')
       name = OpenSSL::X509::Name.new
       name.add_entry('CN', 'cn')
       signer.should_receive(:subject).and_return(name)
