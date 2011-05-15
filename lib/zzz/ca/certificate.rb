@@ -1,7 +1,8 @@
 #!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
-require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
+require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'utils')
 
 module ZZZ
   module CA
@@ -10,7 +11,7 @@ module ZZZ
       ## デフォルトの証明書発行時のシリアル番号
       DEFAULT_SERIAL = 1
       ## デフォルトの証明書のバージョン（X509v3）
-      DEFAULT_VERSION = 2
+      DEFAULT_VERSION = VERSIONS[:X509v3]
 
       def initialize
         super(:certificate)
@@ -57,16 +58,6 @@ module ZZZ
       ## 証明書（OpenSSL::X509::Certificate オブジェクト）の取得
       def certificate
         @x509
-      end
-
-      ## 署名アルゴリズムの取得
-      def signature_algorithm
-        case @x509.signature_algorithm
-        when 'itu-t'
-          @signature_algorithm
-        else
-          @x509.signature_algorithm
-        end
       end
     end
   end

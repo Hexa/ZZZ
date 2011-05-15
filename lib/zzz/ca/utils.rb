@@ -3,7 +3,9 @@
 
 require 'openssl'
 require 'time'
-require 'zzz/ca/error'
+require File.join(File.expand_path(File.dirname(__FILE__)), 'subject_encoder')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'extension_encoder')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'error')
 
 module ZZZ
   module CA
@@ -51,7 +53,7 @@ module ZZZ
 
       ## Extensions のエンコード
       def self.encode_extensions(extensions, params = {})
-        extension_encoder = CA::ExtensionEncoder.new
+        extension_encoder = ZZZ::CA::ExtensionEncoder.new
         extensions.each_pair do |oid, values|
           critical = values[:critical] || false
           extension_encoder.add(
@@ -73,7 +75,7 @@ module ZZZ
         if subject.instance_of?(OpenSSL::X509::Name)
           subject
         else
-          subject_encoder = CA::SubjectEncoder.new(subject)
+          subject_encoder = ZZZ::CA::SubjectEncoder.new(subject)
           subject_encoder.encode
         end
       end
