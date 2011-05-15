@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'zzz/ca/utils'
-require 'zzz/ca/certificate'
 require 'time'
+require 'zzz/ca/certificate'
 
 describe ZZZ::CA::Certificate do
   context "インスタンスを生成した場合" do
@@ -66,6 +65,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
       @certificate.signature_algorithm = 'MD5'
       @certificate.signature_algorithm.should == 'MD5'
+      @certificate.signature_algorithm.should_not == 'SHA1'
     end
 
     it "#signature_algorithm は署名に使用したアルゴリズムを返すこと" do

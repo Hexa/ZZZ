@@ -1,11 +1,12 @@
 #!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
+require 'openssl'
+require 'time'
+require 'zzz/ca/error'
+
 module ZZZ
   module CA
-    require 'openssl'
-    require 'time'
-
     class Utils
       DEFAULT_KEY_SIZE = 1024
       DEFAULT_PUBLIC_EXPONENT = 65567
@@ -20,6 +21,8 @@ module ZZZ
           OpenSSL::PKey::RSA.new(key_size, exponent)
         when :DSA
           OpenSSL::PKey::DSA.new(key_size, exponent)
+        else
+          raise ZZZ::CA::Error
         end
       end
 
@@ -31,6 +34,8 @@ module ZZZ
           OpenSSL::X509::Request.new
         when :crl
           OpenSSL::X509::CRL.new
+        else
+          raise ZZZ::CA::Error
         end
       end
 
@@ -75,6 +80,8 @@ module ZZZ
           OpenSSL::PKey::RSA.new(private_key)
         when /^-----BEGIN DSA PRIVATE KEY-----/
           OpenSSL::PKey::DSA.new(private_key)
+        else
+          raise ZZZ::CA::Error
         end
       end
 
@@ -92,13 +99,13 @@ module ZZZ
       def self.get_asn1_type(pem)
         case pem
         when /^-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----$/m
-        :certificate
+          :certificate
         when /^-----BEGIN CERTIFICATE REQUEST-----.+-----END CERTIFICATE REQUEST-----$/m
-        :request
+          :request
         when /^-----BEGIN X509 CRL-----.+-----END X509 CRL-----$/m
-        :crl
+          :crl
         else
-          :not_found
+          raise ZZZ::CA::Error
         end
       end
 

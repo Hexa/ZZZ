@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'zzz/ca/utils'
-require 'zzz/ca/crl'
 require 'time'
+require 'zzz/ca/crl'
 
 describe ZZZ::CA::CRL do
   context "インスタンスを生成した場合" do
