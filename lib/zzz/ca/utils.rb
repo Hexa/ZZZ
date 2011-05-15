@@ -8,10 +8,14 @@ require 'zzz/ca/error'
 module ZZZ
   module CA
     class Utils
+      ## デフォルトの公開鍵の鍵長
       DEFAULT_KEY_SIZE = 1024
+      ## デフォルトの Exponent
       DEFAULT_PUBLIC_EXPONENT = 65567
+      ## デフォルトの公開鍵のアルゴリズム
       DEFAULT_PUBLIC_KEY_ALGORITHM = :RSA
 
+      ## 秘密鍵／公開鍵の生成
       def self.gen_pkey(params)
         key_size = params[:key_size] || DEFAULT_KEY_SIZE
         exponent = params[:exponent] || DEFAULT_PUBLIC_EXPONENT
@@ -26,6 +30,7 @@ module ZZZ
         end
       end
 
+      ## OpenSSL::X509 オブジェクトの生成
       def self.new(type)
         case type
         when :certificate
@@ -39,10 +44,12 @@ module ZZZ
         end
       end
 
+      ## 日時のエンコード
       def self.encode_datetime(datetime)
         Time.parse(datetime)
       end
 
+      ## Extensions のエンコード
       def self.encode_extensions(extensions, params = {})
         extension_encoder = CA::ExtensionEncoder.new
         extensions.each_pair do |oid, values|
@@ -61,6 +68,7 @@ module ZZZ
         extension_encoder.encode
       end
 
+      ## DN のエンコード
       def self.encode_subject(subject)
         if subject.instance_of?(OpenSSL::X509::Name)
           subject
@@ -70,10 +78,12 @@ module ZZZ
         end
       end
 
+      ## OpenSSL::Cipher オブジェクトの生成
       def self.cipher(algorithm)
         OpenSSL::Cipher::Cipher.new(algorithm)
       end
 
+      ## PEM 形式の秘密鍵からの OpenSSL::PKey オブジェクトの生成　
       def self.get_pkey_object(private_key)
         case private_key
         when /^-----BEGIN RSA PRIVATE KEY-----/
@@ -85,6 +95,7 @@ module ZZZ
         end
       end
 
+      ## PEM からの OpenSSL::X509 オブジェクトの生成
       def self.gen_x509_object(pem)
         case get_asn1_type(pem)
         when :certificate
@@ -96,6 +107,7 @@ module ZZZ
         end
       end
 
+      ## PEM からの証明書、CSR、CRL の判別
       def self.get_asn1_type(pem)
         case pem
         when /^-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----$/m
@@ -109,6 +121,7 @@ module ZZZ
         end
       end
 
+      ## 証明書の失効
       def self.revoked(serial, revoked_time)
         revoked = OpenSSL::X509::Revoked.new
         revoked.serial = serial

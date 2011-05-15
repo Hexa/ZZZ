@@ -5,6 +5,7 @@ module ZZZ
   module CA
     class Request < X509
 
+      ## デフォルトの CSR のバージョン
       DEFAULT_VERSION = 1
 
       def initialize
@@ -20,6 +21,7 @@ module ZZZ
         end
       end
 
+      ## 秘密鍵の指定
       def private_key=(private_key)
         @private_key = if private_key.instance_of?(String)
                          CA::Utils::get_pkey_object(private_key)
@@ -28,24 +30,24 @@ module ZZZ
                        end
       end
 
+      ## PEM 形式の CSR の指定
       def request=(pem)
         @x509 = CA::Utils::gen_x509_object(pem)
       end
 
+      ## CSR (OpenSSL::X509::Request オブジェクト) の取得
       def request
         @x509
       end
 
+      ## CSR への署名
       def sign(params = {})
         signer = params[:signer] || self
         params[:version] ||= DEFAULT_VERSION
         super(:request, signer, params)
       end
 
-      def request=(pem)
-        @x509 = CA::Utils::gen_x509_object(pem)
-      end
-
+      ## 署名アルゴリズムの取得
       def signature_algorithm
         case @x509.signature_algorithm
         when 'itu-t'

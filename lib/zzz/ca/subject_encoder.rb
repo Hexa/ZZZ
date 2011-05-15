@@ -12,14 +12,17 @@ module ZZZ
         @subject = subject
       end
 
+      ## エンコード前の DN の取得
       def show
         @subject
       end
 
+      ## OID の追加
       def add(oid, value)
         @subject <<  {oid => value}
       end
 
+      ## OID の削除
       def delete(oid)
         subject = []
         @subject.each do |element|
@@ -28,6 +31,7 @@ module ZZZ
         @subject = subject
       end
 
+      ## DN のエンコード
       def encode
         @encoded_subject = OpenSSL::X509::Name.new
         @subject.each do |element|
@@ -38,6 +42,7 @@ module ZZZ
         @encoded_subject
       end
 
+      ## エンコード済み DN の取得
       def encoded_subject
         @encoded_subject
       end

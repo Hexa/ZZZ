@@ -44,10 +44,12 @@ module ZZZ
         end
       end
 
+      ## 現在指定してある Extension の一覧の取得
       def show
         @extensions
       end
 
+      ## Extension の追加
       def add(params)
         oid = params[:oid]
         values = params[:values]
@@ -61,16 +63,19 @@ module ZZZ
         end
       end
 
+      ## Extension の削除
       def delete(oid)
         @extensions.delete(oid)
       end
 
-      # #encode 呼び出し前は例外
+      ## エンコード済み Extensions の取得
       def get_encoded_extensions
-        raise(Error) if @encoded_extensions.nil?
+        # #encode 呼び出し前は例外
+        raise if @encoded_extensions.nil?
         @encoded_extensions
       end
 
+      ## Extensions のエンコード
       def encode
         @encoded_extensions = []
         @extensions.each_pair do |key, elements|
@@ -92,7 +97,7 @@ module ZZZ
               oid = get_oid(key)
               @encoded_extensions << @extension_factory.create_ext(oid, values.join(','), critical)
             else
-              raise(RbCertificate::Error, "Invalid type: #{type}.")
+              raise
             end
           end
         end
@@ -146,7 +151,7 @@ module ZZZ
         elsif extension_factory.subject_request
           extension_factory.subject_request.public_key
         else
-          raise(Error, "NotFound public_key: .")
+          raise
         end
       end
     end

@@ -4,6 +4,7 @@
 module ZZZ
   module CA
     class CRL < X509
+      ## デフォルトの CRL のバージョン
       DEFAULT_VERSION = 2
 
       def initialize
@@ -20,14 +21,17 @@ module ZZZ
         end
       end
 
+      ## PEM 形式の CRL の指定
       def crl=(pem)
         @x509 = CA::Utils::gen_x509_object(pem)
       end
 
+      ## CRL (OpenSSL::X509::CRL オブジェクト) の取得
       def crl
         @x509
       end
 
+      ## 失効させる証明書 (シリアル) の指定
       def add_revoked(params)
         serial = params[:serial]
         revoked_time = params[:datetime]
@@ -35,6 +39,7 @@ module ZZZ
         @x509.add_revoked(revoked)
       end
 
+      ## CRL への署名
       def sign(params)
         params[:data] = self
         signer = params[:signer]
