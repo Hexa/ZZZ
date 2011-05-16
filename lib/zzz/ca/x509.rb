@@ -8,10 +8,11 @@ module ZZZ
     class X509
 
       ## 証明書や CRL に署名するためのデフォルトのアルゴリズム
-      DEFAULT_SIGNATURE_ALGIRITHM = 'SHA1'
+      DEFAULT_SIGNATURE_ALGIRITHM = SIGNATURE_ALGORITHMS[:SHA1]
 
       ## 秘密鍵
       attr_reader :private_key
+      attr_writer :signature_algorithm
 
       ## 引数 type には生成するインスタンスを指定
       ## * 証明書:  :certificate
@@ -27,8 +28,6 @@ module ZZZ
         when /^(subject|issuer)=$/
           subject = CA::Utils::encode_subject(args[0])
           @x509.__send__(name, subject)
-        when /signature_algorithm=/
-          @signature_algorithm = args[0]
         when /^.+=$/
           @x509.__send__(name, args[0])
         when /^.+$/

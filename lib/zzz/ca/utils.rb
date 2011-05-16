@@ -15,7 +15,7 @@ module ZZZ
       ## デフォルトの Exponent
       DEFAULT_PUBLIC_EXPONENT = 65567
       ## デフォルトの公開鍵のアルゴリズム
-      DEFAULT_PUBLIC_KEY_ALGORITHM = :RSA
+      DEFAULT_PUBLIC_KEY_ALGORITHM = PUBLIC_KEY_ALGORITHMS[:RSA]
 
       ## 秘密鍵／公開鍵の生成
       def self.gen_pkey(params)
@@ -127,7 +127,7 @@ module ZZZ
       def self.revoked(serial, revoked_time)
         revoked = OpenSSL::X509::Revoked.new
         revoked.serial = serial
-        revoked.time = CA::Utils::encode_datetime(revoked_time)
+        revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
         revoked
       end
     end
