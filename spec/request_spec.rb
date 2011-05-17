@@ -38,6 +38,14 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @request.sign.class.should == ZZZ::CA::Request
     end
 
+    it "#sign(:version => 0) で署名した後の CSR のバージョンは 0 であること " do
+      subject = [{'CN' => 'CA'}]
+      @request.subject = subject
+      @request.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA)
+      @request.sign(:version => 0)
+      @request.version.should == 0
+    end
+
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
       @request.signature_algorithm = 'MD5'
       @request.signature_algorithm.should == 'MD5'

@@ -62,6 +62,34 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       @certificate.sign(:serial => 1).class.should == ZZZ::CA::Certificate
     end
 
+    it "#sign(:version => 1) で署名した後の証明書のバージョンは 1 であること" do
+      @certificate.not_before = '2010/09/21 00:00:00'
+      @certificate.not_after = '2010/10/21 00:00:00'
+      subject = [{'CN' => 'CA'}]
+      @certificate.subject = subject
+      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA)
+      @certificate.sign(:serial => 1, :version => 1)
+      @certificate.version.should == 1
+    end
+
+    it "#sign(:signer => ca) で CA が署名した後の証明書の発行者は署名した CA であること" do
+      ca = ZZZ::CA::Certificate.new
+      ca.not_before = '2010/09/21 00:00:00'
+      ca.not_after = '2010/10/21 00:00:00'
+      subject = [{'CN' => 'CA'}]
+      ca.subject = subject
+      ca.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :RSA)
+      ca.sign(:serial => 1, :version => 1)
+
+      @certificate.not_before = '2010/09/21 00:00:00'
+      @certificate.not_after = '2010/10/21 00:00:00'
+      subject = [{'CN' => 'Server'}]
+      @certificate.subject = subject
+      @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA)
+      @certificate.sign(:serial => 2, :signer => ca)
+      @certificate.issuer.to_s.should == (OpenSSL::X509::Name.new).add_entry('CN', 'CA').to_s
+    end
+
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
       @certificate.signature_algorithm = 'MD5'
       @certificate.signature_algorithm.should == 'MD5'
