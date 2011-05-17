@@ -1,21 +1,49 @@
-========
-ZZZ (仮)
-========
+===
+ZZZ
+===
 
 :Author: Hexa
 :Mail:  hexa.diary@gmail.com
 
+DESCRIPTION
+===========
 
-目的
-====
+証明書発行ライブラリです．
 
-RbCertificate の設計では，証明書も CSR も CRL も同じように扱っていたため，
-変更しにくくなっている箇所があるので，同じような使い方ができるけれども，
-それぞれの役割を分けた設計にしてみる
+証明書，CSR，CRL の作成が可能です．
 
-CSR::
 
-  require './lib/zzz/ca'
+INSTALL
+=======
+
+最新のソースコードは下記のリポジトリから取得可能です．
+::
+
+  git://github.com/Hexa/ZZZ.git
+
+インストール
+::
+
+  $ rake build
+  $ gem install pkg/ZZZ-<version>.gem
+
+
+REQUIREMENTS
+============
+
+- ruby 1.9.2
+
+
+SAMPLE
+======
+
+CSR
+---
+
+CSR の作成
+::
+
+  require 'zzz'
   include ZZZ::CA
 
   request = Request.new
@@ -28,12 +56,107 @@ CSR::
     {'CN' => 'Server'}]
   request.subject = subject
   request.sign
-  request.to_text
+  puts request.to_text
 
-Certificate::
 
-  require './lib/zzz/ca'
+証明書
+------
+
+ルート CA 証明書の作成
+::
+
+  require 'zzz'
   include ZZZ::CA
+
+  certificate = Certificate.new
+  certificate.gen_private_key
+  certificate.not_before = '2010/09/21 00:00:00'
+  certificate.not_after = '2010/10/21 00:00:00'
+  subject = [
+    {'C' => 'JP'},
+    {'ST' => 'Tokyo'},
+    {'L' => 'Chuo'},
+    {'O' => 'O'},
+    {'CN' => 'CA'}]
+  certificate.subject = subject
+  extensions = {
+    'basicConstraints' => {
+      :values => ['CA:TRUE', 'pathlen:0']},
+    'keyUsage' => {
+      :values => ['keyCertSign', 'cRLSign']},
+    'extendedKeyUsage' => {
+      :values => [
+        'TLS Web Server Authentication',
+        'TLS Web Client Authentication']}}
+  certificate.extensions = extensions
+  certificate.sign(:serial => 1)
+  puts certificate.to_text
+
+
+証明書の作成
+::
+
+  require 'zzz'
+  include ZZZ::CA
+
+  ca = Certificate.new
+  ca.gen_private_key
+  ca.not_before = '2010/09/21 00:00:00'
+  ca.not_after = '2010/10/21 00:00:00'
+  subject = [
+    {'C' => 'JP'},
+    {'ST' => 'Tokyo'},
+    {'L' => 'Chuo'},
+    {'O' => 'O'},
+    {'CN' => 'CA'}]
+  ca.subject = subject
+  extensions = {
+    'basicConstraints' => {
+      :values => ['CA:TRUE', 'pathlen:0']},
+    'keyUsage' => {
+      :values => ['keyCertSign', 'cRLSign']},
+    'extendedKeyUsage' => {
+      :values => [
+        'TLS Web Server Authentication',
+        'TLS Web Client Authentication']}}
+  ca.extensions = extensions
+  ca.sign(:serial => 1)
+
+
+  certificate = Certificate.new
+  certificate.gen_private_key
+  certificate.not_before = '2010/09/21 00:00:00'
+  certificate.not_after = '2010/10/21 00:00:00'
+  subject = [
+    {'C' => 'JP'},
+    {'ST' => 'Tokyo'},
+    {'L' => 'Chuo'},
+    {'O' => 'O'},
+    {'CN' => 'Server'}]
+  certificate.subject = subject
+  extensions = {
+    'basicConstraints' => {
+      :values => ['CA:FALSE']},
+    'keyUsage' => {
+      :values => ['keyCertSign', 'cRLSign']},
+    'extendedKeyUsage' => {
+      :values => [
+        'TLS Web Server Authentication',
+        'TLS Web Client Authentication']}}
+  certificate.extensions = extensions
+  certificate.sign(:serial => 2, :signer => ca)
+  puts certificate.to_text
+
+
+CRL
+---
+
+CRL の作成
+::
+
+  require 'zzz'
+  include ZZZ::CA
+
   certificate = Certificate.new
   certificate.gen_private_key
   certificate.not_before = '2010/09/21 00:00:00'
@@ -57,10 +180,7 @@ Certificate::
   certificate.extensions = extensions
   certificate.sign(:serial => 1)
 
-CRL::
 
-  require './lib/zzz/ca'
-  include ZZZ::CA
   crl = CRL.new
   crl.last_update = '2010/09/21 00:00:00'
   crl.next_update = '2010/10/21 00:00:00'
@@ -68,13 +188,10 @@ CRL::
   crl.add_revoked(:serial => 2, :datetime => Time.now.to_s)
 
   crl.sign(:signer => certificate)
-  crl.to_text
+  puts crl.to_text
 
 
-条件
-====
+COPYRIGHT
+=========
 
-- 各クラスごとの役割は分ける
-- 重複は最小にする
-- 共通処理は Utils クラスへ
-- CA 以外も実装できるようにしておく
+Copyright (c) 2011 Hiroshi Yoshida <hexa.diary@gmail.com>. See LICENSE for details.
