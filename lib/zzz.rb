@@ -9,3 +9,7 @@ require File.join(File.expand_path(File.dirname(__FILE__)), "zzz", "ca", "reques
 require File.join(File.expand_path(File.dirname(__FILE__)), "zzz", "ca", "crl")
 require File.join(File.expand_path(File.dirname(__FILE__)), "zzz", "ca", "subject_encoder")
 require File.join(File.expand_path(File.dirname(__FILE__)), "zzz", "ca", "extension_encoder")
+
+module ZZZ
+  VERSION ||= "0.0.1"
+end
