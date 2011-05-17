@@ -48,16 +48,6 @@ module ZZZ
         params[:version] ||= DEFAULT_VERSION
         super(:request, signer, params)
       end
-
-      ## 署名アルゴリズムの取得
-      def signature_algorithm
-        case @x509.signature_algorithm
-        when 'itu-t'
-          @signature_algorithm
-        else
-          @x509.signature_algorithm
-        end
-      end
     end
   end
 end
