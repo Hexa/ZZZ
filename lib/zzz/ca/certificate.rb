@@ -32,7 +32,7 @@ module ZZZ
       ## 秘密鍵の指定
       ## 引数: private_key には PEM または、OpenSSL::PKey オブジェクトを指定
       ##       文字列の場合は PEM として処理
-      ##       文字列の以外の場合は PEM として処理
+      ##       文字列の以外の場合は OpenSSL::Pkey オブジェクトとして処理
       def private_key=(private_key)
         @private_key = if private_key.instance_of?(String)
                          CA::Utils::get_pkey_object(private_key)
