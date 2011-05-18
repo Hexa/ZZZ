@@ -4,6 +4,8 @@ ZZZ
 
 :Author: Hexa
 :Mail:  hexa.diary@gmail.com
+:License: New BSD License
+
 
 DESCRIPTION
 ===========

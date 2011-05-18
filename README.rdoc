@@ -82,7 +82,7 @@ CSR の作成
   puts certificate.to_text
 
 
-=== 証明書の作成
+証明書の作成
 
   require 'zzz'
   include ZZZ::CA
