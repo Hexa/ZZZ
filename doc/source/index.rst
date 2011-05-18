@@ -11,6 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   certificate
+   request
+   crl
+
 Indices and tables
 ==================
 
