@@ -106,14 +106,14 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       @certificate.signature_algorithm.should == 'dsaWithSHA1'
     end
 
-    it "#add_extension({'oid' => {:values => ['value1', 'value2'], :critical => true}) を指定して、署名した後の証明書は指定した extension を含んでいること" do
+    it "#add_extension('oid', ['value1', 'value2'], critical = true}) を指定して、署名した後の証明書は指定した extension を含んでいること" do
       @certificate.not_before = '2010/09/21 00:00:00'
       @certificate.not_after = '2010/10/21 00:00:00'
       subject = [{'CN' => 'CA'}]
       @certificate.subject = subject
       @certificate.gen_private_key(:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA)
-      @certificate.add_extension('basicConstraints' => {:values => ['CA:TRUE', 'pathlen:1'], :critical => true})
-      @certificate.add_extension('keyUsage' => {:values => ['keyCertSign', 'cRLSign'], :critical => false})
+      @certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:1'], true)
+      @certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
       @certificate.sign(:serial => 1)
 
       extensions = []
@@ -128,4 +128,3 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
     end
   end
 end
-

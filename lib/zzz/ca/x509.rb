@@ -88,8 +88,11 @@ module ZZZ
         @x509.extensions = CA::Utils::encode_extensions(@extensions, params)
       end
 
-      def add_extension(extension, params ={})
+      ## Extension の指定
+      def add_extension(oid, values, critical = false, params ={})
         params[:certificates] = @certificates
+        extension = {}
+        extension[oid] = {:values => values, :critical => critical}
         @extensions.merge!(extension)
         @x509.extensions = CA::Utils::encode_extensions(@extensions, params)
       end
