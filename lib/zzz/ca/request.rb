@@ -3,6 +3,8 @@
 
 require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
 
+## TODO:: ca 以下でよいか
+
 module ZZZ
   module CA
     class Request < X509
@@ -33,6 +35,7 @@ module ZZZ
       end
 
       ## PEM 形式の CSR の指定
+      ## TODO:: DER の指定
       def request=(pem)
         @x509 = CA::Utils::gen_x509_object(pem)
       end

@@ -24,6 +24,7 @@ module ZZZ
       end
 
       ## PEM 形式の CRL の指定
+      ## TODO: DER の指定
       def crl=(pem)
         @x509 = CA::Utils::gen_x509_object(pem)
       end

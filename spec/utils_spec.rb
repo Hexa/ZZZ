@@ -9,38 +9,38 @@ require 'zzz/ca/error'
 
 describe ZZZ::CA::Utils do
   context "OpenSSL インスタンスを生成する場合" do
-    it ".new(:certificate) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
+    it "::new(:certificate) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
       ZZZ::CA::Utils::new(:certificate).class.should == OpenSSL::X509::Certificate
     end
 
-    it ".new(:request) は OpenSSL::X509::Request オブジェクトを返すこと" do
+    it "::new(:request) は OpenSSL::X509::Request オブジェクトを返すこと" do
       ZZZ::CA::Utils::new(:request).class.should == OpenSSL::X509::Request
     end
 
-    it ".new(:crl) は OpenSSL::X509::CRL オブジェクトを返すこと" do
+    it "::new(:crl) は OpenSSL::X509::CRL オブジェクトを返すこと" do
       ZZZ::CA::Utils::new(:crl).class.should == OpenSSL::X509::CRL
     end
 
-    it ".new(:unexpected_symbol) は例外を発生させること" do
+    it "::new(:unexpected_symbol) は例外を発生させること" do
       lambda{ ZZZ::CA::Utils::new(:unexpected_symbol) }.should raise_error( ZZZ::CA::Error )
     end
   end
 
   context "時間をエンコードする場合" do
-    it ".encode_datetime(\"2011/05/10 00:00:00\") は 2011/05/10 00:00:00 の Time オブジェクトを返すこと" do
+    it "::encode_datetime(\"2011/05/10 00:00:00\") は 2011/05/10 00:00:00 の Time オブジェクトを返すこと" do
       datetime = "2011/05/10 00:00:00"
       ZZZ::CA::Utils::encode_datetime(datetime).should == Time.parse(datetime)
     end
   end
 
   context "共通鍵暗号を使用する場合" do
-    it ".cipher(\"AES256\") は OpenSSL::Cipher::Cipher オブジェクトを返すこと" do
+    it "::cipher(\"AES256\") は OpenSSL::Cipher::Cipher オブジェクトを返すこと" do
       ZZZ::CA::Utils::cipher("AES256").class.should == OpenSSL::Cipher::Cipher
     end
   end
 
   context "秘密鍵を読み込む場合" do
-    it ".get_pkey_object(rsa_private_key) は OpenSSL::PKey::RSA オブジェクトを返すこと" do
+    it "::get_pkey_object(rsa_private_key) は OpenSSL::PKey::RSA オブジェクトを返すこと" do
       rsa_private_key = <<-PrivateKey
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQD4GGnFOZay4OlHKRFZUP0o2IbNYFpkkE52iTslwy9HriXLA1rU
@@ -61,7 +61,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       ZZZ::CA::Utils::get_pkey_object(rsa_private_key).class.should == OpenSSL::PKey::RSA
     end
 
-    it ".get_pkey_object(private_key) の private_key が不正な書式の場合は例外を発生させること" do
+    it "::get_pkey_object(private_key) の private_key が不正な書式の場合は例外を発生させること" do
       private_key = <<-PrivateKey
 -----BEGIN SSA PRIVATE KEY-----
 MIICXQIBAAKBgQD4GGnFOZay4OlHKRFZUP0o2IbNYFpkkE52iTslwy9HriXLA1rU
@@ -84,7 +84,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
   end
 
   context "PEM を読み込む場合" do
-    it ".gen_x509_object(certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
+    it "::gen_x509_object(certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
       certificate_pem = <<-Certificate
 -----BEGIN CERTIFICATE-----
 MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
@@ -106,7 +106,7 @@ UPt704SNSQNfqQ==
       ZZZ::CA::Utils::gen_x509_object(certificate_pem).class.should == OpenSSL::X509::Certificate
     end
 
-    it ".gen_x509_object(pem) の pem が不正な書式の場合は例外を発生させること" do
+    it "::gen_x509_object(pem) の pem が不正な書式の場合は例外を発生させること" do
       pem = <<-Certificate
 ------BEGIN CERTIFICATE-----
 MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
@@ -130,7 +130,7 @@ UPt704SNSQNfqQ==
   end
 
   context "PEM のタイプを判別する場合" do
-    it ".get_asn1_type(crl_pem) は :crl を返すこと" do
+    it "::get_asn1_type(crl_pem) は :crl を返すこと" do
       crl_pem = <<-CRL
 -----BEGIN X509 CRL-----
 MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
@@ -146,7 +146,7 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
       ZZZ::CA::Utils::get_asn1_type(crl_pem).should == :crl
     end
 
-    it ".get_asn1_type(pem) の pem が不正な書式の場合は例外を発生させること" do
+    it "::get_asn1_type(pem) の pem が不正な書式の場合は例外を発生させること" do
      pem = <<-PEM
 -----BEGIN X509 ZZZ-----
 MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
@@ -164,9 +164,8 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
   end
 
   context "証明書を失効させる場合" do
-    it ".revoked(serial, time) は OpenSSL::X509::Revoked オブジェクトを返すこと" do
+    it "::revoked(serial, time) は OpenSSL::X509::Revoked オブジェクトを返すこと" do
       ZZZ::CA::Utils::revoked(1, Time.now.to_s).class.should == OpenSSL::X509::Revoked
     end
   end
 end
-

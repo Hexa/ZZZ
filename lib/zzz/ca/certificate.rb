@@ -51,6 +51,7 @@ module ZZZ
       end
 
       ## PEM 形式の証明書を指定
+      ## TODO: DER の指定
       def certificate=(pem)
         @x509 = CA::Utils::gen_x509_object(pem)
       end
