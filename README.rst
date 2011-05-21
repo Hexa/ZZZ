@@ -105,16 +105,9 @@ CSR の作成
     {'O' => 'O'},
     {'CN' => 'CA'}]
   ca.subject = subject
-  extensions = {
-    'basicConstraints' => {
-      :values => ['CA:TRUE', 'pathlen:0']},
-    'keyUsage' => {
-      :values => ['keyCertSign', 'cRLSign']},
-    'extendedKeyUsage' => {
-      :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication']}}
-  ca.extensions = extensions
+  ca.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
+  ca.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
+  ca.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
   ca.sign(:serial => 1)
 
 
@@ -129,16 +122,8 @@ CSR の作成
     {'O' => 'O'},
     {'CN' => 'Server'}]
   certificate.subject = subject
-  extensions = {
-    'basicConstraints' => {
-      :values => ['CA:FALSE']},
-    'keyUsage' => {
-      :values => ['keyCertSign', 'cRLSign']},
-    'extendedKeyUsage' => {
-      :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication']}}
-  certificate.extensions = extensions
+  certificate.add_extension('basicConstraints', ['CA:FALSE'])
+  certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
   certificate.sign(:serial => 2, :signer => ca)
   puts certificate.to_text
 
@@ -163,16 +148,9 @@ CRL の作成
     {'O' => 'O'},
     {'CN' => 'CA'}]
   certificate.subject = subject
-  extensions = {
-    'basicConstraints' => {
-      :values => ['CA:TRUE', 'pathlen:0']},
-    'keyUsage' => {
-      :values => ['keyCertSign', 'cRLSign']},
-    'extendedKeyUsage' => {
-      :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication']}}
-  certificate.extensions = extensions
+  certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
+  certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
+  certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
   certificate.sign(:serial => 1)
 
 
