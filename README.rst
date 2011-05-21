@@ -81,16 +81,9 @@ CSR の作成
     {'O' => 'O'},
     {'CN' => 'CA'}]
   certificate.subject = subject
-  extensions = {
-    'basicConstraints' => {
-      :values => ['CA:TRUE', 'pathlen:0']},
-    'keyUsage' => {
-      :values => ['keyCertSign', 'cRLSign']},
-    'extendedKeyUsage' => {
-      :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication']}}
-  certificate.extensions = extensions
+  certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
+  certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
+  certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
   certificate.sign(:serial => 1)
   puts certificate.to_text
 

@@ -20,6 +20,7 @@ module ZZZ
       ## * CRL:     :crl
       def initialize(type)
         @certificates = {}
+        @extensions = {}
         @x509 = CA::Utils::new(type)
       end
 
@@ -83,7 +84,17 @@ module ZZZ
       ## Extension の指定
       def extensions=(extensions, params = {})
         params[:certificates] = @certificates
-        @x509.extensions = CA::Utils::encode_extensions(extensions, params)
+        @extensions = extensions
+        @x509.extensions = CA::Utils::encode_extensions(@extensions, params)
+      end
+
+      ## Extension の指定
+      def add_extension(oid, values, critical = false, params ={})
+        params[:certificates] = @certificates
+        extension = {}
+        extension[oid] = {:values => values, :critical => critical}
+        @extensions.merge!(extension)
+        @x509.extensions = CA::Utils::encode_extensions(@extensions, params)
       end
 
       ## 証明書への署名
