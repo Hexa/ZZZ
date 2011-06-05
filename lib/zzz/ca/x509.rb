@@ -1,14 +1,30 @@
 #!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
-require File.join(File.expand_path(File.dirname(__FILE__)), '..', 'ca')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'utils')
 
 module ZZZ
   module CA
-    class X509
+    VERSIONS ||= {}
+    VERSIONS[:X509v1] ||= 0
+    VERSIONS[:X509v2] ||= 1
+    VERSIONS[:X509v3] ||= 2
+    VERSIONS[:REQUESTv1] ||= 0
+    VERSIONS[:REQUESTv2] ||= 1
+    VERSIONS[:CRLv1] ||= 0
+    VERSIONS[:CRLv2] ||= 1
+ 
+    SIGNATURE_ALGORITHMS ||= {}
+    SIGNATURE_ALGORITHMS[:SHA1] ||= "SHA1"
+    SIGNATURE_ALGORITHMS[:MD5] ||= "MD5"
+ 
+    PUBLIC_KEY_ALGORITHMS ||= {}
+    PUBLIC_KEY_ALGORITHMS[:RSA] ||= :RSA
+    PUBLIC_KEY_ALGORITHMS[:DSA] ||= :DSA
 
+    class X509
       ## 証明書や CRL に署名するためのデフォルトのアルゴリズム
-      DEFAULT_SIGNATURE_ALGIRITHM = SIGNATURE_ALGORITHMS[:SHA1]
+      DEFAULT_SIGNATURE_ALGIRITHM = ZZZ::CA::SIGNATURE_ALGORITHMS[:SHA1]
 
       ## 秘密鍵
       attr_reader :private_key
@@ -125,7 +141,7 @@ module ZZZ
         data.certificate.sign(
           signer.private_key,
           OpenSSL::Digest.new(signature_algorithm))
-          data
+        data
       end
 
       def crl_sign(signer, data)
@@ -134,7 +150,7 @@ module ZZZ
         data.crl.sign(
           signer.private_key,
           OpenSSL::Digest.new(signature_algorithm))
-          data
+        data
       end
 
       def request_sign(signer)

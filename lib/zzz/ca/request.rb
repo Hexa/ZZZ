@@ -8,9 +8,8 @@ require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
 module ZZZ
   module CA
     class Request < X509
-
       ## デフォルトの CSR のバージョン
-      DEFAULT_VERSION = VERSIONS[:REQUESTv2]
+      DEFAULT_VERSION = ZZZ::CA::VERSIONS[:REQUESTv2]
 
       def initialize
         super(:request)

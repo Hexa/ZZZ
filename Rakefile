@@ -15,8 +15,7 @@ LICENSE = ""
 
 task :files do
   spec_files = FileList["spec/**/*"]
-  #doc_files = FileList["doc/source/**/*", "doc/Makefile"]
-  doc_files = FileList["doc/*"]
+  doc_files = FileList["doc/source/**/*", "doc/Makefile"]
   lib_files = FileList["lib/**/*"]
   rake_files = FileList["Rakefile"]
   version_files = FileList["VERSION"]
