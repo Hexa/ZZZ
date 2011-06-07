@@ -110,6 +110,18 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       @crl.version.should == 0
     end
 
+    it "#revoked(serial, time) は指定した serial の OpenSSL::X509::Revoked オブジェクトを返すこと" do
+      time = Time.now
+      revoked = OpenSSL::X509::Revoked.new
+      revoked.serial = 1
+      revoked.time = time
+      @crl.add_revoked(:serial => 1, :datetime => time.to_s).serial.should == revoked.serial
+      revoked = OpenSSL::X509::Revoked.new
+      revoked.serial = 2
+      revoked.time = time
+      @crl.add_revoked(:serial => 2, :datetime => time.to_s).serial.should == revoked.serial
+    end
+
     after do
       @crl = nil
     end

@@ -162,10 +162,4 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
       lambda{ ZZZ::CA::Utils::get_asn1_type(pem) }.should raise_error( ZZZ::CA::Error )
     end
   end
-
-  context "証明書を失効させる場合" do
-    it "::revoked(serial, time) は OpenSSL::X509::Revoked オブジェクトを返すこと" do
-      ZZZ::CA::Utils::revoked(1, Time.now.to_s).class.should == OpenSSL::X509::Revoked
-    end
-  end
 end

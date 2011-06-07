@@ -38,7 +38,9 @@ module ZZZ
       def add_revoked(params)
         serial = params[:serial]
         revoked_time = params[:datetime]
-        revoked = CA::Utils::revoked(serial, revoked_time)
+        revoked = OpenSSL::X509::Revoked.new
+        revoked.serial = serial
+        revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
         @x509.add_revoked(revoked)
       end
 

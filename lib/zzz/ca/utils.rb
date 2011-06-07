@@ -123,14 +123,6 @@ module ZZZ
           raise ZZZ::CA::Error
         end
       end
-
-      ## 証明書の失効
-      def self.revoked(serial, revoked_time)
-        revoked = OpenSSL::X509::Revoked.new
-        revoked.serial = serial
-        revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
-        revoked
-      end
     end
   end
 end
