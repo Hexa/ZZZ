@@ -23,6 +23,8 @@ module ZZZ
           @x509.__send__(name, datetime)
         when /^(private_key)|(pkey)$/
           @private_key
+        when /^verify$/
+          @x509.__send__(name, args[0])
         else
           super
         end
