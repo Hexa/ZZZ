@@ -1,22 +1,15 @@
 #!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
+require 'openssl'
+require 'zzz/ca/error'
+
 module ZZZ
   module CA
     class ExtensionEncoder
-      require 'openssl'
-
       def initialize(extensions = {})
         @extensions = extensions
         @extension_factory = OpenSSL::X509::ExtensionFactory.new
-      end
-
-      def subject_request(element)
-        if element.instance_of?(String)
-          OpenSSL::X509::Request.new(element)
-        else
-          element
-        end
       end
 
       def method_missing(name, *args)
@@ -71,7 +64,7 @@ module ZZZ
       ## エンコード済み Extensions の取得
       def get_encoded_extensions
         # #encode 呼び出し前は例外
-        raise if @encoded_extensions.nil?
+        raise ZZZ::CA::Error if @encoded_extensions.nil?
         @encoded_extensions
       end
 
@@ -97,7 +90,7 @@ module ZZZ
               oid = get_oid(key)
               @encoded_extensions << @extension_factory.create_ext(oid, values.join(','), critical)
             else
-              raise
+              raise ZZZ::CA::Error
             end
           end
         end
@@ -111,7 +104,7 @@ module ZZZ
         values.each do |value|
           extension << OpenSSL::ASN1::BitString(value.to_i(2).chr).to_der
         end
-        X509::Extension.new(key, extension, critical)
+        OpenSSL::X509::Extension.new(key, extension, critical)
       end
 
       ## oid の取得
@@ -151,7 +144,7 @@ module ZZZ
         elsif extension_factory.subject_request
           extension_factory.subject_request.public_key
         else
-          raise
+          raise ZZZ::CA::Error
         end
       end
     end
