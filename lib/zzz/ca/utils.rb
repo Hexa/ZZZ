@@ -110,6 +110,24 @@ module ZZZ
         end
       end
 
+      ## DER からの OpenSSL::X509 オブジェクトの生成
+      def self.gen_x509_object_from_der(der)
+        raise ZZZ::CA::Error unless verify_asn1(der)
+        begin
+          OpenSSL::X509::Certificate.new(der)
+        rescue
+          begin
+            OpenSSL::X509::Request.new(der)
+          rescue
+            begin
+              OpenSSL::X509::CRL.new(der)
+            rescue => ex
+              raise ZZZ::CA::Error
+            end
+          end
+        end
+      end
+
       ## PEM からの証明書、CSR、CRL の判別
       def self.get_asn1_type(pem)
         case pem
@@ -121,6 +139,16 @@ module ZZZ
           :crl
         else
           raise ZZZ::CA::Error
+        end
+      end
+
+      ## str が ASN1 であるかの確認
+      def self.verify_asn1(der)
+        begin
+          OpenSSL::ASN1.decode_all(der)
+          true
+        rescue
+          false
         end
       end
     end

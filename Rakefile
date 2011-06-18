@@ -11,7 +11,7 @@ ZZZ is a certificate and crl issue library for the ssl application.
 EOF
 MAIL = "hexa.diary@gmail.com"
 LIBS = ["lib"]
-LICENSE = ""
+LICENSE = "New BSD License"
 
 task :files do
   spec_files = FileList["spec/**/*"]
