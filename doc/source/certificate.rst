@@ -2,8 +2,6 @@
 Certificate
 ===========
 
-:Authors: Hexa
-
 証明書を発行します．
 
 Methods
@@ -22,12 +20,12 @@ Certificate オブジェクトを生成します．
 
 証明書（OpenSSL::X509::Certificate オブジェクト）を取得します．
 
-#certificate=(pem)
-^^^^^^^^^^^^^^^^^^
+#certificate=(pem_or_der)
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 発行済みの証明書から Certificate オブジェクトを生成します．
 
-pem には PEM 形式の証明書を指定します．
+pem_or_der には PEM 形式，または，DER 形式の証明書を指定します．
 
 #private_key=(private_key)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

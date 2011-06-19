@@ -2,8 +2,6 @@
 CRL
 ===
 
-:Authors: Hexa
-
 CRL を発行します．
 
 Methods
@@ -34,14 +32,12 @@ params には :serial と :datetime を指定します．
 
 CRL (OpenSSL::X509::CRL オブジェクト) を取得します．
 
-
-#crl=(pem)
-^^^^^^^^^^
+#crl=(pem_or_der)
+^^^^^^^^^^^^^^^^^
 
 発行済みの CRL から CRL オブジェクトを生成します．
 
-pem には PEM 形式の CRL を指定します．
-
+pem_or_der には PEM 形式，または，DER 形式の CRL を指定します．
 
 #sign(parrams)
 ^^^^^^^^^^^^^^
