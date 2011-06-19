@@ -2,8 +2,6 @@
 Request
 =======
 
-:Authors: Hexa
-
 CSR を発行します．
 
 Methods
@@ -22,12 +20,12 @@ Request オブジェクトを生成します．
 
 CSR（OpenSSL::X509::Request オブジェクト）を取得します．
 
-#request=(pem)
-^^^^^^^^^^^^^^
+#request=(pem_or_der)
+^^^^^^^^^^^^^^^^^^^^^
 
 作成済みの CSR から Request オブジェクトを生成します．
 
-pem には PEM 形式の CSR を指定します．
+pem_or_der には PEM 形式，または，DER 形式の CSR を指定します．
 
 #private_key=(private_key)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
