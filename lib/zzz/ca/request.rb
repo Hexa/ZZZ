@@ -3,12 +3,13 @@
 
 require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
 
+## TODO:: ca 以下でよいか
+
 module ZZZ
   module CA
     class Request < X509
-
       ## デフォルトの CSR のバージョン
-      DEFAULT_VERSION = VERSIONS[:REQUESTv2]
+      DEFAULT_VERSION = ZZZ::CA::VERSIONS[:REQUESTv2]
 
       def initialize
         super(:request)
@@ -33,8 +34,13 @@ module ZZZ
       end
 
       ## PEM 形式の CSR の指定
-      def request=(pem)
-        @x509 = CA::Utils::gen_x509_object(pem)
+      def request=(pem_or_der)
+        case CA::Utils::verify_asn1(pem_or_der)
+        when true
+          @x509 = CA::Utils::gen_x509_object_from_der(pem_or_der)
+        when false
+          @x509 = CA::Utils::gen_x509_object(pem_or_der)
+        end
       end
 
       ## CSR (OpenSSL::X509::Request オブジェクト) の取得

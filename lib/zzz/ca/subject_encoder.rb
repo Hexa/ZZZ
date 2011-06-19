@@ -19,16 +19,12 @@ module ZZZ
 
       ## OID の追加
       def add(oid, value)
-        @subject <<  {oid => value}
+        @subject << {oid => value}
       end
 
       ## OID の削除
       def delete(oid)
-        subject = []
-        @subject.each do |element|
-          subject << element unless element.include?(oid)
-        end
-        @subject = subject
+        @subject.map! {|dn| dn if dn[oid].nil? }.compact!
       end
 
       ## DN のエンコード

@@ -3,6 +3,7 @@
 
 require 'rspec'
 require 'time'
+require 'openssl'
 require 'zzz/ca/crl'
 
 describe ZZZ::CA::CRL do
@@ -27,6 +28,24 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
       @crl.crl = crl_pem
       @crl.crl.class.should == OpenSSL::X509::CRL
     end
+
+    it "#crl=(pem) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
+      crl_pem = <<-CRL
+-----BEGIN X509 CRL-----
+MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
+CAwFVG9reW8xCjAIBgNVBAcMAUwxCzAJBgNVBAYTAkpQMQowCAYDVQQKDAFvFw0x
+MDEwMjcxNDA1MDBaFw0xMDExMDMxNDA1MDBaMCgwEgIBGBcNMTAxMDI3MTQwNTAw
+WjASAgEZFw0xMDEwMjcxNDA1MDBaoC8wLTAKBgNVHRQEAwIBEjAfBgNVHSMEGDAW
+gBST1ffQ3NubF9S0zbA+Ih128OOt5TANBgkqhkiG9w0BAQUFAAOBgQCiFdMY8KRW
+cL070DDfAIHWI/XaJEZ8qNlLfEU5SuQSRdv48PrVL2pXMyxd0nw5LC+BlXaaJ9vI
+Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
+SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
+-----END X509 CRL-----
+      CRL
+      @crl.crl = OpenSSL::X509::CRL.new(crl_pem).to_der
+      @crl.crl.class.should == OpenSSL::X509::CRL
+    end
+
 
     it "#add_revoked(:serial => 1, :datetime => \"2011/05/12 00:00:00\") は OpenSSL::X509::Revoked オブジェクトを返すこと" do
       @crl.add_revoked(:serial => 1, :datetime => "2011/05/12 00:00:00").class.should == OpenSSL::X509::Revoked
@@ -108,6 +127,18 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       subject = [{'CN' => 'CA'}]
       @crl.sign(:signer => signer, :version => 0)
       @crl.version.should == 0
+    end
+
+    it "#revoked(serial, time) は指定した serial の OpenSSL::X509::Revoked オブジェクトを返すこと" do
+      time = Time.now
+      revoked = OpenSSL::X509::Revoked.new
+      revoked.serial = 1
+      revoked.time = time
+      @crl.add_revoked(:serial => 1, :datetime => time.to_s).serial.should == revoked.serial
+      revoked = OpenSSL::X509::Revoked.new
+      revoked.serial = 2
+      revoked.time = time
+      @crl.add_revoked(:serial => 2, :datetime => time.to_s).serial.should == revoked.serial
     end
 
     after do

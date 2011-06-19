@@ -11,12 +11,11 @@ ZZZ is a certificate and crl issue library for the ssl application.
 EOF
 MAIL = "hexa.diary@gmail.com"
 LIBS = ["lib"]
-LICENSE = ""
+LICENSE = "New BSD License"
 
 task :files do
   spec_files = FileList["spec/**/*"]
-  #doc_files = FileList["doc/source/**/*", "doc/Makefile"]
-  doc_files = FileList["doc/*"]
+  doc_files = FileList["doc/source/**/*", "doc/Makefile"]
   lib_files = FileList["lib/**/*"]
   rake_files = FileList["Rakefile"]
   version_files = FileList["VERSION"]

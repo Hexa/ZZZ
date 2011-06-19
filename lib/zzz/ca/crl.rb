@@ -24,8 +24,13 @@ module ZZZ
       end
 
       ## PEM 形式の CRL の指定
-      def crl=(pem)
-        @x509 = CA::Utils::gen_x509_object(pem)
+      def crl=(pem_or_der)
+        case CA::Utils::verify_asn1(pem_or_der)
+        when true
+          @x509 = CA::Utils::gen_x509_object_from_der(pem_or_der)
+        when false
+          @x509 = CA::Utils::gen_x509_object(pem_or_der)
+        end
       end
 
       ## CRL (OpenSSL::X509::CRL オブジェクト) の取得
@@ -37,7 +42,9 @@ module ZZZ
       def add_revoked(params)
         serial = params[:serial]
         revoked_time = params[:datetime]
-        revoked = CA::Utils::revoked(serial, revoked_time)
+        revoked = OpenSSL::X509::Revoked.new
+        revoked.serial = serial
+        revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
         @x509.add_revoked(revoked)
       end
 
