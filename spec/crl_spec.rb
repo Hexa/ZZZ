@@ -137,7 +137,8 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       revoked = OpenSSL::X509::Revoked.new
       revoked.serial = 2
       revoked.time = time
-      @crl.add_revoked(:serial => 2, :datetime => time.to_s).serial.should == revoked.serial
+      revoked.add_extension(OpenSSL::X509::Extension.new('CRLReason', 'keyCompromise'))
+      @crl.add_revoked(:serial => 2, :datetime => time.to_s, :reason => 'keyCompromise').serial.should == revoked.serial
     end
 
     after do

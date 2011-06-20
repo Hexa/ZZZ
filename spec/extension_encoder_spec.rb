@@ -112,7 +112,8 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
         'TLS Web Server Authentication',
         'TLS Web Client Authentication'])
-      @extension_encoder.encode.should have(3).items
+      @extension_encoder.add(:oid => 'CRLReason', :values => ['keyCompromise'], :type => :enumerated)
+      @extension_encoder.encode.should have(4).items
     end
 
     it '#encode は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
@@ -144,12 +145,12 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.get_encoded_extensions[rand(2)].should be_an_instance_of OpenSSL::X509::Extension
     end
 
-    it '#add で不正な ASN.1 型を指定した場合の #encode は RbCertificate::Error Exception を返すこと' do
+    it '#add で不正な ASN.1 型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.13', :values => ['comment'], :type => :aaa)
       lambda { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end
 
-    it '#encode の前の #get_encoded_extensions は RbCertificate::Error Exception を返すこと' do
+    it '#encode の前の #get_encoded_extensions は ZZZ::CA::Error Exception を返すこと' do
       lambda { @extension_encoder.get_encoded_extensions }.should raise_error( ZZZ::CA::Error )
     end
 
@@ -186,7 +187,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.encode[0].oid.should  == 'authorityKeyIdentifier'
     end
 
-    it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid:true が追加された #encode は RbCertificate::Error Exception を返すこと' do
+    it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid:true が追加された #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'])
       lambda { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end

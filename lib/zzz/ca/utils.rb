@@ -56,13 +56,15 @@ module ZZZ
         extension_encoder = ZZZ::CA::ExtensionEncoder.new
         extensions.each_pair do |oid, values|
           critical = values[:critical] || false
+          type = values[:type]
           extension_encoder.add(
             :oid => oid,
             :values => values[:values],
-            :critical => critical)
+            :critical => critical,
+            :type => type)
         end
 
-        certificates = params[:certificates]
+        certificates = params[:certificates] || {}
         certificates.each_pair.each do |key, certificate|
           extension_encoder.__send__("#{key}=".to_sym, certificate)
         end

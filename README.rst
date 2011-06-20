@@ -157,8 +157,9 @@ CRL の作成
   crl = CRL.new
   crl.last_update = '2010/09/21 00:00:00'
   crl.next_update = '2010/10/21 00:00:00'
-  crl.add_revoked(:serial => 1, :datetime => Time.now.to_s)
+  crl.add_revoked(:serial => 1, :datetime => Time.now.to_s, :reason => 'superseded')
   crl.add_revoked(:serial => 2, :datetime => Time.now.to_s)
+  crl.add_revoked(:serial => 3, :datetime => Time.now.to_s, :reason => 'cACompromise')
 
   crl.sign(:signer => certificate)
   puts crl.to_text
