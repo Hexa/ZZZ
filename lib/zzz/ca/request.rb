@@ -1,4 +1,3 @@
-#!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
 require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
@@ -37,7 +36,7 @@ module ZZZ
       def request=(pem_or_der)
         case CA::Utils::verify_asn1(pem_or_der)
         when true
-          @x509 = CA::Utils::gen_x509_object_from_der(pem_or_der)
+          @x509 = CA::Utils::gen_x509_object_from_der(self.class, pem_or_der)
         when false
           @x509 = CA::Utils::gen_x509_object(pem_or_der)
         end

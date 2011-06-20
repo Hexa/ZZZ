@@ -1,4 +1,3 @@
-#!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
 require 'openssl'
@@ -111,21 +110,25 @@ module ZZZ
       end
 
       ## DER からの OpenSSL::X509 オブジェクトの生成
-      def self.gen_x509_object_from_der(der)
+      def self.gen_x509_object_from_der(klass, der)
         raise ZZZ::CA::Error unless verify_asn1(der)
         begin
-          OpenSSL::X509::Certificate.new(der)
+          object = OpenSSL::X509::Certificate.new(der)
+          raise ZZZ::CA::Error unless klass == ZZZ::CA::Certificate
         rescue
           begin
-            OpenSSL::X509::Request.new(der)
+            object = OpenSSL::X509::Request.new(der)
+            raise ZZZ::CA::Error unless klass == ZZZ::CA::Request
           rescue
             begin
-              OpenSSL::X509::CRL.new(der)
+              object = OpenSSL::X509::CRL.new(der)
+              raise ZZZ::CA::Error unless klass == ZZZ::CA::CRL
             rescue => ex
               raise ZZZ::CA::Error
             end
           end
         end
+        object
       end
 
       ## PEM からの証明書、CSR、CRL の判別
