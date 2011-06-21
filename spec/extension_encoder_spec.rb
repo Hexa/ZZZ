@@ -112,8 +112,12 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
         'TLS Web Server Authentication',
         'TLS Web Client Authentication'])
+      @extension_encoder.encode.should have(3).items
+    end
+
+    it 'oid が CRLReson の場合に add で Extension を追加した後の #encode は 1 つの X509::Extension オブジェクトを返すこと' do
       @extension_encoder.add(:oid => 'CRLReason', :values => ['keyCompromise'], :type => :enumerated)
-      @extension_encoder.encode.should have(4).items
+      @extension_encoder.encode.should be_an_instance_of OpenSSL::X509::Extension
     end
 
     it '#encode は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do

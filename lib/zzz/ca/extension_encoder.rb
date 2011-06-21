@@ -86,7 +86,14 @@ module ZZZ
             when :bit_string
               @encoded_extensions << encode_bit_string_type(key, values, critical)
             when :enumerated
-              @encoded_extensions << OpenSSL::X509::Extension.new(key, values[0])
+              case key
+              when 'CRLReason'
+                @encoded_extensions = OpenSSL::X509::Extension.new(key, values[0])
+              else
+                values.each do |value|
+                  @encoded_extensions << OpenSSL::X509::Extension.new(key, value)
+                end
+              end
             when :default
               oid = get_oid(key)
               @encoded_extensions << @extension_factory.create_ext(oid, values.join(','), critical)

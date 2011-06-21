@@ -46,7 +46,7 @@ module ZZZ
         revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
         unless params[:reason].nil?
           reason = params[:reason]
-          revoked.add_extension(CA::Utils::encode_extensions('CRLReason' => {:values => [reason], :type => :enumerated})[0])
+          revoked.add_extension(CA::Utils::encode_extensions('CRLReason' => {:values => [reason], :type => :enumerated}))
         end
         @x509.add_revoked(revoked)
       end
