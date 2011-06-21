@@ -150,9 +150,10 @@ CRL の作成
   certificate.subject = subject
   certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
   certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
+  certificate.add_extension('crlDistributionPoints', ['URI:http://127.0.0.1/example.crl'])
   certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
   certificate.sign(:serial => 1)
-
+  certificate.to_text
 
   crl = CRL.new
   crl.last_update = '2010/09/21 00:00:00'

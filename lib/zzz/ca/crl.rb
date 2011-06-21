@@ -39,6 +39,11 @@ module ZZZ
 
       ## 失効させる証明書 (シリアル) の指定
       def add_revoked(params)
+        revoked = revoke(params)
+        @x509.add_revoked(revoked)
+      end
+
+      def revoke(params)
         serial = params[:serial]
         revoked_time = params[:datetime]
         revoked = OpenSSL::X509::Revoked.new
@@ -46,9 +51,10 @@ module ZZZ
         revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
         unless params[:reason].nil?
           reason = params[:reason]
-          revoked.add_extension(CA::Utils::encode_extensions('CRLReason' => {:values => [reason], :type => :enumerated}))
+          revoked_reason = CA::Utils::encode_extensions('CRLReason' => {:values => [reason], :type => :enumerated})
+          revoked.add_extension(revoked_reason)
         end
-        @x509.add_revoked(revoked)
+        revoked
       end
 
       ## CRL への署名

@@ -112,6 +112,7 @@ module ZZZ
       end
 
       ## DER からの OpenSSL::X509 オブジェクトの生成
+      ## TODO: 例外を使用しない方法
       def self.gen_x509_object_from_der(klass, der)
         raise ZZZ::CA::Error unless verify_asn1(der)
         begin

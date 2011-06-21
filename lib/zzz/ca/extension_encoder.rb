@@ -49,9 +49,9 @@ module ZZZ
         type = params[:type] || :default
         @extensions[oid] ||= {}
         unless type == :default
-          @extensions[oid].merge!({:values => values, :critical => critical, :type => type})
+          @extensions[oid].merge!(:values => values, :critical => critical, :type => type)
         else
-          @extensions[oid].merge!({:values => values, :critical => critical})
+          @extensions[oid].merge!(:values => values, :critical => critical)
         end
       end
 
@@ -90,13 +90,13 @@ module ZZZ
               when 'CRLReason'
                 @encoded_extensions = OpenSSL::X509::Extension.new(key, values[0])
               else
+                ## TODO: OpenSSL::X509::ExtensionFactory にすべきか
                 values.each do |value|
-                  @encoded_extensions << OpenSSL::X509::Extension.new(key, value)
+                  @encoded_extensions << OpenSSL::X509::Extension.new(key, value, critical)
                 end
               end
             when :default
-              oid = get_oid(key)
-              @encoded_extensions << @extension_factory.create_ext(oid, values.join(','), critical)
+              @encoded_extensions << @extension_factory.create_ext(get_oid(key), values.join(','), critical)
             else
               raise ZZZ::CA::Error
             end
@@ -108,11 +108,11 @@ module ZZZ
       private
       ## BitString 型にエンコード
       def encode_bit_string_type(key, values, critical)
-        extension = ''
+        encoded_values = ''
         values.each do |value|
-          extension << OpenSSL::ASN1::BitString(value.to_i(2).chr).to_der
+          encoded_values << OpenSSL::ASN1::BitString(value.to_i(2).chr).to_der
         end
-        OpenSSL::X509::Extension.new(key, extension, critical)
+        OpenSSL::X509::Extension.new(key, encoded_values, critical)
       end
 
       ## oid の取得
@@ -122,13 +122,13 @@ module ZZZ
 
       ## crlNumber を ASN.1 形式にエンコード
       def encode_crl_number(key, values, critical)
-        extension = OpenSSL::ASN1::Integer(values[0]).to_der
-        OpenSSL::X509::Extension.new(key, extension, critical)
+        encoded_values = OpenSSL::ASN1::Integer(values[0]).to_der
+        OpenSSL::X509::Extension.new(key, encoded_values, critical)
       end
 
       ## authorityKeyIdentifier を ASN.1 形式にエンコード
       def encode_authority_key_identifier(key, values, critical)
-        extension = ''
+        encoded_values = ''
         values.each do |value|
           case value
           when /^keyid:true$/i
@@ -138,12 +138,12 @@ module ZZZ
               v,
               OpenSSL::ASN1::EOC,
               :CONTEXT_SPECIFIC).to_der
-              extension = OpenSSL::ASN1::Sequence([key_id]).to_der
+              encoded_values = OpenSSL::ASN1::Sequence([key_id]).to_der
           else
-            extension = value
+            encoded_values = value
           end
         end
-        OpenSSL::X509::Extension.new(key, extension, critical)
+        OpenSSL::X509::Extension.new(key, encoded_values, critical)
       end
 
       def get_public_key(extension_factory)
