@@ -49,12 +49,7 @@ module ZZZ
 
       ## 証明書を指定
       def certificate=(pem_or_der)
-        case CA::Utils::verify_asn1(pem_or_der)
-        when true
-          @x509 = CA::Utils::gen_x509_object_from_der(self.class, pem_or_der)
-        when false
-          @x509 = CA::Utils::gen_x509_object(pem_or_der)
-        end
+        @x509 = CA::Utils::get_x509_object(self.class, pem_or_der)
       end
 
       ## 証明書（OpenSSL::X509::Certificate オブジェクト）の取得

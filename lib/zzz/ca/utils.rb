@@ -113,7 +113,7 @@ module ZZZ
 
       ## DER からの OpenSSL::X509 オブジェクトの生成
       ## TODO: 例外を使用しない方法
-      def self.gen_x509_object_from_der(klass, der)
+      def self.gen_x509_object_for_der(klass, der)
         raise ZZZ::CA::Error unless verify_asn1(der)
         begin
           object = OpenSSL::X509::Certificate.new(der)
@@ -145,6 +145,15 @@ module ZZZ
           :crl
         else
           raise ZZZ::CA::Error
+        end
+      end
+
+      def self.get_x509_object(klass, pem_or_der)
+        case CA::Utils::verify_asn1(pem_or_der)
+        when true
+          CA::Utils::gen_x509_object_for_der(klass, pem_or_der)
+        when false
+          CA::Utils::gen_x509_object(pem_or_der)
         end
       end
 
