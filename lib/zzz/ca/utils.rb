@@ -74,12 +74,8 @@ module ZZZ
 
       ## DN のエンコード
       def self.encode_subject(subject)
-        subject.instance_of?(OpenSSL::X509::Name) ? subject : ZZZ::CA::Utils::encode(subject)
-      end
-
-      def self.encode(subject)
-        subject_encoder = ZZZ::CA::SubjectEncoder.new(subject)
-        subject_encoder.encode
+        encode = ->(subject) { ZZZ::CA::SubjectEncoder.new(subject).encode }
+        subject.instance_of?(OpenSSL::X509::Name) ? subject : encode.call(subject)
       end
 
       ## OpenSSL::Cipher オブジェクトの生成
@@ -113,7 +109,7 @@ module ZZZ
         end
       end
 
-      ## PEM からの OpenSSL::X509 オブジェクトの生成
+      ## PEM または DER からの OpenSSL::X509 オブジェクトの生成
       def self.x509_object(type, pem_or_der)
         case type
         when :certificate
