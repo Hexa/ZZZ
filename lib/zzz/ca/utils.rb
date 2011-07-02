@@ -74,12 +74,12 @@ module ZZZ
 
       ## DN のエンコード
       def self.encode_subject(subject)
-        if subject.instance_of?(OpenSSL::X509::Name)
-          subject
-        else
-          subject_encoder = ZZZ::CA::SubjectEncoder.new(subject)
-          subject_encoder.encode
-        end
+        subject.instance_of?(OpenSSL::X509::Name) ? subject : ZZZ::CA::Utils::encode(subject)
+      end
+
+      def self.encode(subject)
+        subject_encoder = ZZZ::CA::SubjectEncoder.new(subject)
+        subject_encoder.encode
       end
 
       ## OpenSSL::Cipher オブジェクトの生成
@@ -99,43 +99,8 @@ module ZZZ
         end
       end
 
-      ## PEM からの OpenSSL::X509 オブジェクトの生成
-      def self.gen_x509_object(pem)
-        case get_asn1_type(pem)
-        when :certificate
-          OpenSSL::X509::Certificate.new(pem)
-        when :request
-          OpenSSL::X509::Request.new(pem)
-        when :crl
-          OpenSSL::X509::CRL.new(pem)
-        end
-      end
-
-      ## DER からの OpenSSL::X509 オブジェクトの生成
-      ## TODO: 例外を使用しない方法
-      def self.gen_x509_object_for_der(klass, der)
-        raise ZZZ::CA::Error unless verify_asn1(der)
-        begin
-          object = OpenSSL::X509::Certificate.new(der)
-          raise ZZZ::CA::Error unless klass == ZZZ::CA::Certificate
-        rescue
-          begin
-            object = OpenSSL::X509::Request.new(der)
-            raise ZZZ::CA::Error unless klass == ZZZ::CA::Request
-          rescue
-            begin
-              object = OpenSSL::X509::CRL.new(der)
-              raise ZZZ::CA::Error unless klass == ZZZ::CA::CRL
-            rescue => ex
-              raise ZZZ::CA::Error
-            end
-          end
-        end
-        object
-      end
-
       ## PEM からの証明書、CSR、CRL の判別
-      def self.get_asn1_type(pem)
+      def self.asn1_type(pem)
         case pem
         when /^-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----$/m
           :certificate
@@ -148,12 +113,17 @@ module ZZZ
         end
       end
 
-      def self.get_x509_object(klass, pem_or_der)
-        case CA::Utils::verify_asn1(pem_or_der)
-        when true
-          CA::Utils::gen_x509_object_for_der(klass, pem_or_der)
-        when false
-          CA::Utils::gen_x509_object(pem_or_der)
+      ## PEM からの OpenSSL::X509 オブジェクトの生成
+      def self.x509_object(type, pem_or_der)
+        case type
+        when :certificate
+          OpenSSL::X509::Certificate.new(pem_or_der)
+        when :request
+          OpenSSL::X509::Request.new(pem_or_der)
+        when :crl
+          OpenSSL::X509::CRL.new(pem_or_der)
+        else
+          raise ZZZ::CA::Error, "#{__LINE__}: Unsupported type: #{type}"
         end
       end
 

@@ -187,7 +187,7 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
       CRL
 
       der = OpenSSL::X509::CRL.new(crl_pem).to_der
-      lambda { @certificate.certificate = der }.should raise_error( ZZZ::CA::Error )
+      lambda { @certificate.certificate = der }.should raise_error( OpenSSL::X509::CertificateError )
     end
 
     after do

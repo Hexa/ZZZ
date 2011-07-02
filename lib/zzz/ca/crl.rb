@@ -24,7 +24,7 @@ module ZZZ
 
       ## PEM 形式の CRL の指定
       def crl=(pem_or_der)
-        @x509 = CA::Utils::get_x509_object(self.class, pem_or_der)
+        @x509 = CA::Utils::x509_object(:crl, pem_or_der)
       end
 
       ## CRL (OpenSSL::X509::CRL オブジェクト) の取得

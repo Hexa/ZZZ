@@ -49,7 +49,7 @@ module ZZZ
 
       ## 証明書を指定
       def certificate=(pem_or_der)
-        @x509 = CA::Utils::get_x509_object(self.class, pem_or_der)
+        @x509 = CA::Utils::x509_object(:certificate, pem_or_der)
       end
 
       ## 証明書（OpenSSL::X509::Certificate オブジェクト）の取得

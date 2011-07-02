@@ -34,7 +34,7 @@ module ZZZ
 
       ## PEM 形式の CSR の指定
       def request=(pem_or_der)
-        @x509 = CA::Utils::get_x509_object(self.class, pem_or_der)
+        @x509 = CA::Utils::x509_object(:request, pem_or_der)
       end
 
       ## CSR (OpenSSL::X509::Request オブジェクト) の取得

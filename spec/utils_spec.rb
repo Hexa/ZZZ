@@ -83,7 +83,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
   end
 
   context "PEM を読み込む場合" do
-    it "::gen_x509_object(certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
+    it "::x509_object(certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
       certificate_pem = <<-Certificate
 -----BEGIN CERTIFICATE-----
 MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
@@ -102,10 +102,10 @@ JO2h5womlEjvvb3FWyVGGYAue+hPGDSZ//qXgahOOSscl9+HgwIZp0GA+KIgOPim
 UPt704SNSQNfqQ==
 -----END CERTIFICATE-----
       Certificate
-      ZZZ::CA::Utils::gen_x509_object(certificate_pem).class.should == OpenSSL::X509::Certificate
+      ZZZ::CA::Utils::x509_object(:certificate, certificate_pem).class.should == OpenSSL::X509::Certificate
     end
 
-    it "::gen_x509_object(pem) の pem が不正な書式の場合は例外を発生させること" do
+    it "::x509_object(pem) の pem が不正な書式の場合は例外を発生させること" do
       pem = <<-Certificate
 ------BEGIN CERTIFICATE-----
 MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
@@ -124,12 +124,12 @@ JO2h5womlEjvvb3FWyVGGYAue+hPGDSZ//qXgahOOSscl9+HgwIZp0GA+KIgOPim
 UPt704SNSQNfqQ==
 -----END CERTIFICATE-----
       Certificate
-      lambda{ ZZZ::CA::Utils::gen_x509_object(pem) }.should raise_error( ZZZ::CA::Error )
+      lambda{ ZZZ::CA::Utils::x509_object(:certificate, pem) }.should raise_error( OpenSSL::X509::CertificateError )
     end
   end
 
   context "PEM のタイプを判別する場合" do
-    it "::get_asn1_type(crl_pem) は :crl を返すこと" do
+    it "::asn1_type(crl_pem) は :crl を返すこと" do
       crl_pem = <<-CRL
 -----BEGIN X509 CRL-----
 MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
@@ -142,10 +142,10 @@ Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 CRL-----
       CRL
-      ZZZ::CA::Utils::get_asn1_type(crl_pem).should == :crl
+      ZZZ::CA::Utils::asn1_type(crl_pem).should == :crl
     end
 
-    it "::get_asn1_type(pem) の pem が不正な書式の場合は例外を発生させること" do
+    it "::asn1_type(pem) の pem が不正な書式の場合は例外を発生させること" do
      pem = <<-PEM
 -----BEGIN X509 ZZZ-----
 MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
@@ -158,7 +158,7 @@ Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 ZZZ-----
       PEM
-      lambda{ ZZZ::CA::Utils::get_asn1_type(pem) }.should raise_error( ZZZ::CA::Error )
+      lambda{ ZZZ::CA::Utils::asn1_type(pem) }.should raise_error( ZZZ::CA::Error )
     end
   end
 end

@@ -78,7 +78,7 @@ module ZZZ
 
       ## 証明書や CRL の Extensions で使用する、この証明書の発行者の証明書の指定
       def issuer_certificate=(certificate)
-        @certificates[:issuer_certificate] = CA::Utils::gen_x509_object(certificate)
+        @certificates[:issuer_certificate] = CA::Utils::x509_object(:certificate, certificate)
       end
 
       ## 証明書や CRL の Extensions で使用する、この証明書の発行者の証明書取得
@@ -88,7 +88,7 @@ module ZZZ
 
       ## この証明書の発行元になる CSR の指定
       def subject_request=(request)
-        @certificates[:subject_request] = CA::Utils::gen_x509_object(request)
+        @certificates[:subject_request] = CA::Utils::x509_object(:request, request)
       end
 
       ## この証明書の発行元になる CSR の取得
