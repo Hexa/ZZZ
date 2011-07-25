@@ -5,6 +5,7 @@ require 'time'
 require 'openssl'
 require 'zzz/ca/utils'
 require 'zzz/ca/subject_encoder'
+require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::SubjectEncoder do
   context "インスタンスを生成した場合" do

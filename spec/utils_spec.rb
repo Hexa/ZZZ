@@ -5,6 +5,7 @@ require 'time'
 require 'openssl'
 require 'zzz/ca/utils'
 require 'zzz/ca/error'
+require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::Utils do
   context "OpenSSL インスタンスを生成する場合" do

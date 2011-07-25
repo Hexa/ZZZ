@@ -2,7 +2,7 @@
 
 require 'rspec'
 require 'zzz/ca/extension_encoder'
-include 
+require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::ExtensionEncoder do
   context 'Extension を ASN1 形式に変換するとき' do
