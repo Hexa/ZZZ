@@ -26,7 +26,7 @@ module ZZZ
       DEFAULT_SIGNATURE_ALGIRITHM = ZZZ::CA::SIGNATURE_ALGORITHMS[:SHA1]
 
       ## 秘密鍵
-      attr_reader :private_key
+      #attr_reader :private_key
       attr_writer :signature_algorithm
 
       ## 引数 type には生成するインスタンスを指定

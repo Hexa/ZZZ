@@ -107,6 +107,11 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     end
 
     it '#encode は add で追加した数の X509::Extension オブジェクトの配列を返すこと' do
+      @extension_encoder.add(:oid => 'crlNumber', :values => [1])
+      @extension_encoder.encode.should have(1).items
+    end
+
+    it '#encode は add で追加した数の X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'])
       @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
       @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
@@ -158,19 +163,37 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       lambda { @extension_encoder.get_encoded_extensions }.should raise_error( ZZZ::CA::Error )
     end
 
-    it '#subject_request= で CSR (OpenSSL::X509::Request オブジェクト) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
+    it '#subject_request= で CSR (PEM) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
       @extension_encoder.subject_request = @request_pem
       @extension_encoder.subject_request.should be_an_instance_of OpenSSL::X509::Request
     end
 
-    it '#subject_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#subject_request= で CSR (OpenSSL::X509::Request オブジェクト) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
+      @extension_encoder.subject_request = OpenSSL::X509::Request.new(@request_pem)
+      @extension_encoder.subject_request.should be_an_instance_of OpenSSL::X509::Request
+    end
+
+    it '#subject_request= で文字列または OpenSSL::X509::Request オブジェクト以外のオブジェクトを設定する場合は例外を返すこと' do
+      lambda { @extension_encoder.subject_request = 1 }.should raise_error( ZZZ::CA::Error )
+    end
+
+    it '#subject_certificate= で証明書 (PEM) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
       @extension_encoder.subject_certificate = @certificate_pem
       @extension_encoder.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
     end
 
-    it '#issuer_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #issuer_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#subject_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
+      @extension_encoder.subject_certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      @extension_encoder.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
+    end
+
+    it '#issuer_certificate= で証明書 (PEM) を指定した後の #issuer_certificate は OpenSSL::X509::Certificate を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.issuer_certificate.should be_an_instance_of OpenSSL::X509::Certificate
+    end
+
+    it '#issuer_certificate= で文字列または OpenSSL::X509::Certificate オブジェクト以外のオブジェクトを設定する場合は例外を返すこと' do
+      lambda { @extension_encoder.issuer_certificate = nil }.should raise_error( ZZZ::CA::Error )
     end
 
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は OpenSSL::X509::Extension の配列を返すこと' do

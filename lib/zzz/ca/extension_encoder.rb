@@ -16,17 +16,25 @@ module ZZZ
         when /^subject_request$/
           @extension_factory.subject_request
         when /^subject_request=$/
-          request = if args[0].instance_of? String
-                      OpenSSL::X509::Request.new(args[0])
-                    else
-                      args[0]
-                    end
-        @extension_factory.__send__(name, request)
+          request = args[0]
+          subject_request = case "#{request.class}"
+                            when 'String'
+                              OpenSSL::X509::Request.new(request)
+                            when 'OpenSSL::X509::Request'
+                              request
+                            else
+                              raise ZZZ::CA::Error
+                            end
+        @extension_factory.__send__(name, subject_request)
         when /^(subject|issuer)_certificate=$/
-          certificate = if args[0].instance_of? String
-                          OpenSSL::X509::Certificate.new(args[0])
+          cert = args[0]
+          certificate = case "#{cert.class}"
+                        when 'String'
+                          OpenSSL::X509::Certificate.new(cert)
+                        when 'OpenSSL::X509::Certificate'
+                          cert
                         else
-                          args[0]
+                          raise ZZZ::CA::Error
                         end
         @extension_factory.__send__(name, certificate)
         when /^(.+)=$/
@@ -132,7 +140,7 @@ module ZZZ
         values.each do |value|
           case value
           when /^keyid:true$/i
-            public_key =  get_public_key(@extension_factory)
+            public_key =  get_public_key
             v = OpenSSL::Digest::SHA1.digest(public_key.to_der)
             key_id = OpenSSL::ASN1::ASN1Data.new(
               v,
@@ -146,11 +154,11 @@ module ZZZ
         OpenSSL::X509::Extension.new(key, encoded_values, critical)
       end
 
-      def get_public_key(extension_factory)
-        if extension_factory.issuer_certificate
-          extension_factory.issuer_certificate.public_key
-        elsif extension_factory.subject_request
-          extension_factory.subject_request.public_key
+      def get_public_key
+        if @extension_factory.issuer_certificate
+          @extension_factory.issuer_certificate.public_key
+        elsif @extension_factory.subject_request
+          @extension_factory.subject_request.public_key
         else
           raise ZZZ::CA::Error
         end

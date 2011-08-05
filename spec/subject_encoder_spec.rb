@@ -92,6 +92,25 @@ describe ZZZ::CA::SubjectEncoder do
       @subject_encoder.encode.to_s.should == name.to_s
     end
 
+    it "#encode 後の #encoded_subject は DN をエンコードした値（OpenSSL::X509::Name オブジェクト）を返すこと" do
+      name = OpenSSL::X509::Name.new
+      name.add_entry('C', 'JP')
+      name.add_entry('C', 'JP')
+      name.add_entry('CN', 'cn')
+      name.add_entry('CN', 'cn')
+      name.add_entry('C', 'JP')
+      name.add_entry('C', 'JP')
+      name.add_entry('CN', 'cn')
+      name.add_entry('CN', 'cn')
+
+      @subject_encoder.add('C', 'JP')
+      @subject_encoder.add('C', 'JP')
+      @subject_encoder.add('CN', 'cn')
+      @subject_encoder.add('CN', 'cn')
+      @subject_encoder.encode
+      @subject_encoder.encoded_subject.to_s.should == name.to_s
+    end
+
     after do
       @name = nil
       @subject = nil

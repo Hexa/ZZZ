@@ -84,7 +84,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
   end
 
   context "PEM を読み込む場合" do
-    it "::x509_object(certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
+    it "::x509_object(:certificate, certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
       certificate_pem = <<-Certificate
 -----BEGIN CERTIFICATE-----
 MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
@@ -106,7 +106,7 @@ UPt704SNSQNfqQ==
       ZZZ::CA::Utils::x509_object(:certificate, certificate_pem).class.should == OpenSSL::X509::Certificate
     end
 
-    it "::x509_object(pem) の pem が不正な書式の場合は例外を発生させること" do
+    it "::x509_object(:certificate, pem) の pem が不正な書式の場合は例外を発生させること" do
       pem = <<-Certificate
 ------BEGIN CERTIFICATE-----
 MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
@@ -127,9 +127,69 @@ UPt704SNSQNfqQ==
       Certificate
       lambda{ ZZZ::CA::Utils::x509_object(:certificate, pem) }.should raise_error( OpenSSL::X509::CertificateError )
     end
+
+    it "::x509_object(:csr, pem) の場合は例外を発生させること" do
+      pem = <<-Certificate
+------BEGIN CERTIFICATE-----
+MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
+MAwGA1UECAwFVG9reW8xCjAIBgNVBAcMAUwxCzAJBgNVBAYTAkpQMQowCAYDVQQK
+DAFvMB4XDTEwMTAyNzE0MDQyMloXDTEwMTEyNjE0MDQyMlowPzELMAkGA1UEAwwC
+Q04xCzAJBgNVBAgMAnN0MQowCAYDVQQHDAFsMQswCQYDVQQGEwJKUDEKMAgGA1UE
+CgwBbzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAzdZC7O0uGvWEhfPp+nC6
+4BoU6hRjHMXF61jPNoHugLeNPotp68qcv0Oaz2SSWTBTDBk4MeiD7r+i+XrtyDwp
+lu6SKLPi4haIQUfRAkLjn2Jq8L4x5kwcMeGY/hdW/gA4K5vqQremCljfuKpokKFA
+HIaYR+sYccovK2PMUe+mKkkCAwEAAaN/MH0wDwYDVR0TBAgwBgEB/wIBADALBgNV
+HQ8EBAMCAYYwHQYDVR0OBBYEFAdQS7AkuJSd7tMc17u3oYlVvDjEMB8GA1UdIwQY
+MBaAFJPV99Dc25sX1LTNsD4iHXbw463lMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
+BgEFBQcDAjANBgkqhkiG9w0BAQUFAAOBgQCeS85lYMlcnlRoycksDBIP8RrMW0BM
+utv0yYH9yiMjN3lVG6wKLsLkJHP7HuY5TpYwV/6OzHZvp5NEJpSE9xc5iImY86JC
+JO2h5womlEjvvb3FWyVGGYAue+hPGDSZ//qXgahOOSscl9+HgwIZp0GA+KIgOPim
+UPt704SNSQNfqQ==
+-----END CERTIFICATE-----
+      Certificate
+      lambda{ ZZZ::CA::Utils::x509_object(:csr, pem) }.should raise_error( ZZZ::CA::Error )
+    end
   end
 
   context "PEM のタイプを判別する場合" do
+    it "::asn1_type(certificate_pem) は :certificate を返すこと" do
+      certificate_pem = <<-Certificate
+-----BEGIN CERTIFICATE-----
+MIICdjCCAd+gAwIBAgIBFzANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEO
+MAwGA1UECAwFVG9reW8xCjAIBgNVBAcMAUwxCzAJBgNVBAYTAkpQMQowCAYDVQQK
+DAFvMB4XDTEwMTAyNzE0MDQyMloXDTEwMTEyNjE0MDQyMlowPzELMAkGA1UEAwwC
+Q04xCzAJBgNVBAgMAnN0MQowCAYDVQQHDAFsMQswCQYDVQQGEwJKUDEKMAgGA1UE
+CgwBbzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAzdZC7O0uGvWEhfPp+nC6
+4BoU6hRjHMXF61jPNoHugLeNPotp68qcv0Oaz2SSWTBTDBk4MeiD7r+i+XrtyDwp
+lu6SKLPi4haIQUfRAkLjn2Jq8L4x5kwcMeGY/hdW/gA4K5vqQremCljfuKpokKFA
+HIaYR+sYccovK2PMUe+mKkkCAwEAAaN/MH0wDwYDVR0TBAgwBgEB/wIBADALBgNV
+HQ8EBAMCAYYwHQYDVR0OBBYEFAdQS7AkuJSd7tMc17u3oYlVvDjEMB8GA1UdIwQY
+MBaAFJPV99Dc25sX1LTNsD4iHXbw463lMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
+BgEFBQcDAjANBgkqhkiG9w0BAQUFAAOBgQCeS85lYMlcnlRoycksDBIP8RrMW0BM
+utv0yYH9yiMjN3lVG6wKLsLkJHP7HuY5TpYwV/6OzHZvp5NEJpSE9xc5iImY86JC
+JO2h5womlEjvvb3FWyVGGYAue+hPGDSZ//qXgahOOSscl9+HgwIZp0GA+KIgOPim
+UPt704SNSQNfqQ==
+-----END CERTIFICATE-----
+      Certificate
+      ZZZ::CA::Utils::asn1_type(certificate_pem).should == :certificate
+    end
+
+    it "::asn1_type(request_pem) は :request を返すこと" do
+      request_pem = <<-Request
+-----BEGIN CERTIFICATE REQUEST-----
+MIIBaTCB0wIAMCsxEDAOBgNVBAMMB2V4YW1wbGUxCjAIBgNVBAoMAU8xCzAJBgNV
+BAYTAkpQMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDYRAol+Ha48uTbOZfK
+qTOjXuZJvS2hjVsr/ES6GP2+a2VMx9bRmSCQ6orlNF71e7p33zoB7Z05nbRFBwDu
+hHz1kc5J/aqoRzDVqIpQgdSnFtfg9VmEILTWvu170QXVoE9KZOOvqu63NiHSFlJg
+kwVCODKlf837nkALbnOOqGkTpwIDAQABoAAwDQYJKoZIhvcNAQEFBQADgYEAQO7A
+ZMouRrcCZBKP10EKNfhOX9qo3HOfm72oK3kQVlXmIrlQKZWuUmDIHNcWbMcrxnQ/
+cttiBtpYtVg2eWJu91/Bmpj8aXRNE+KQ1Mj+9exe6ykqYG+1/sF46OdYmCEwQIxV
+FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
+-----END CERTIFICATE REQUEST-----
+      Request
+      ZZZ::CA::Utils::asn1_type(request_pem).should == :request
+    end
+
     it "::asn1_type(crl_pem) は :crl を返すこと" do
       crl_pem = <<-CRL
 -----BEGIN X509 CRL-----
@@ -160,6 +220,39 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 ZZZ-----
       PEM
       lambda{ ZZZ::CA::Utils::asn1_type(pem) }.should raise_error( ZZZ::CA::Error )
+    end
+
+    it "::asn1_verify(der) の der が DER 形式である場合は true を返すこと" do
+     pem = <<-PEM
+-----BEGIN X509 CRL-----
+MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
+CAwFVG9reW8xCjAIBgNVBAcMAUwxCzAJBgNVBAYTAkpQMQowCAYDVQQKDAFvFw0x
+MDEwMjcxNDA1MDBaFw0xMDExMDMxNDA1MDBaMCgwEgIBGBcNMTAxMDI3MTQwNTAw
+WjASAgEZFw0xMDEwMjcxNDA1MDBaoC8wLTAKBgNVHRQEAwIBEjAfBgNVHSMEGDAW
+gBST1ffQ3NubF9S0zbA+Ih128OOt5TANBgkqhkiG9w0BAQUFAAOBgQCiFdMY8KRW
+cL070DDfAIHWI/XaJEZ8qNlLfEU5SuQSRdv48PrVL2pXMyxd0nw5LC+BlXaaJ9vI
+Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
+SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
+-----END X509 CRL-----
+      PEM
+      der = OpenSSL::X509::CRL.new(pem)
+      ZZZ::CA::Utils::verify_asn1(der).should be_true
+    end
+
+    it "::asn1_verify(der) の der が DER 形式ではない場合は false を返すこと" do
+     pem = <<-PEM
+-----BEGIN X509 CRL-----
+MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
+CAwFVG9reW8xCjAIBgNVBAcMAUwxCzAJBgNVBAYTAkpQMQowCAYDVQQKDAFvFw0x
+MDEwMjcxNDA1MDBaFw0xMDExMDMxNDA1MDBaMCgwEgIBGBcNMTAxMDI3MTQwNTAw
+WjASAgEZFw0xMDEwMjcxNDA1MDBaoC8wLTAKBgNVHRQEAwIBEjAfBgNVHSMEGDAW
+gBST1ffQ3NubF9S0zbA+Ih128OOt5TANBgkqhkiG9w0BAQUFAAOBgQCiFdMY8KRW
+cL070DDfAIHWI/XaJEZ8qNlLfEU5SuQSRdv48PrVL2pXMyxd0nw5LC+BlXaaJ9vI
+Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
+SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
+-----END X509 CRL-----
+      PEM
+      ZZZ::CA::Utils::verify_asn1(pem).should be_false
     end
   end
 end
