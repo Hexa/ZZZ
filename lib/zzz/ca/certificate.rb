@@ -59,6 +59,11 @@ module ZZZ
       def certificate
         @x509
       end
+
+      ## PKCS#12 形式の証明書を取得
+      def pkcs12(passphrase, name = '')
+        OpenSSL::PKCS12.create(passphrase, name, @private_key, @x509)
+      end
     end
   end
 end
