@@ -8,8 +8,8 @@ module ZZZ
       ## デフォルトの CRL のバージョン
       DEFAULT_VERSION = VERSIONS[:CRLv2]
 
-      def initialize
-        super(:crl)
+      def initialize(pem = nil)
+        super(:crl, pem)
       end
 
       def method_missing(name, *args)

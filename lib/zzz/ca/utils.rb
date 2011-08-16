@@ -33,14 +33,14 @@ module ZZZ
       end
 
       ## OpenSSL::X509 オブジェクトの生成
-      def self.new(type)
+      def self.new(type, pem = nil)
         case type
         when :certificate
-          OpenSSL::X509::Certificate.new
+          pem.nil? ? OpenSSL::X509::Certificate.new : OpenSSL::X509::Certificate.new(pem)
         when :request
-          OpenSSL::X509::Request.new
+          pem.nil? ? OpenSSL::X509::Request.new : OpenSSL::X509::Request.new(pem)
         when :crl
-          OpenSSL::X509::CRL.new
+          pem.nil? ? OpenSSL::X509::CRL.new : OpenSSL::X509::CRL.new(pem)
         else
           raise ZZZ::CA::Error
         end

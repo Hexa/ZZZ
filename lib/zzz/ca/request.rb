@@ -10,8 +10,8 @@ module ZZZ
       ## デフォルトの CSR のバージョン
       DEFAULT_VERSION = ZZZ::CA::VERSIONS[:REQUESTv2]
 
-      def initialize
-        super(:request)
+      def initialize(pem = nil)
+        super(:request, pem)
       end
 
       def method_missing(name, *args)

@@ -33,10 +33,10 @@ module ZZZ
       ## * 証明書:  :certificate
       ## * CSR:     :request
       ## * CRL:     :crl
-      def initialize(type)
+      def initialize(type, pem = nil)
         @certificates = {}
         @extensions = {}
-        @x509 = CA::Utils::new(type)
+        @x509 = CA::Utils::new(type, pem)
       end
 
       def method_missing(name, *args)

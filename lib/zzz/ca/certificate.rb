@@ -11,8 +11,8 @@ module ZZZ
       ## デフォルトの証明書のバージョン（X509v3）
       DEFAULT_VERSION = VERSIONS[:X509v3]
 
-      def initialize
-        super(:certificate)
+      def initialize(pem = nil)
+        super(:certificate, pem)
       end
 
       def method_missing(name, *args)
