@@ -9,6 +9,8 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 describe ZZZ::CA::CRL do
   context "インスタンスを生成した場合" do
     before do
+      module ZZZ; module CA; class Utils; end; end; end
+
       @crl_pem = <<-CRL
 -----BEGIN X509 CRL-----
 MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
@@ -40,16 +42,20 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
       PrivateKey
 
+      ZZZ::CA::Utils.should_receive(:new).with(:crl, nil).and_return(OpenSSL::X509::CRL.new)
       @crl = ZZZ::CA::CRL.new
     end
 
     it "#crl=(crl_pem) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
+      ZZZ::CA::Utils.should_receive(:x509_object).with(:crl, @crl_pem).and_return(OpenSSL::X509::CRL.new(@crl_pem))
       @crl.crl = @crl_pem
       @crl.crl.class.should == OpenSSL::X509::CRL
     end
 
-    it "#crl=(pem) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
-      @crl.crl = OpenSSL::X509::CRL.new(@crl_pem).to_der
+    it "#crl=(der) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
+      der = OpenSSL::X509::CRL.new(@crl_pem).to_der
+      ZZZ::CA::Utils.should_receive(:x509_object).with(:crl, der).and_return(OpenSSL::X509::CRL.new(der))
+      @crl.crl = der
       @crl.crl.class.should == OpenSSL::X509::CRL
     end
 
@@ -63,12 +69,18 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 
     it "#last_update='2011/05/10 00:00:00' を指定した後の #last_update は '2010/09/21 00:00:00' の Time オブジェクトを返すこと" do
       time = '2010/09/21 00:00:00'
+      ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                    .with(time) \
+                    .and_return(Time.parse(time))
       @crl.last_update = time
       @crl.last_update.should == Time.parse(time)
     end
 
     it "#next_update='2011/05/10 00:00:00' を指定した後の #next_update は '2010/09/21 00:00:00' の Time オブジェクトを返すこと" do
       time = '2010/09/21 00:00:00'
+      ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                    .with(time) \
+                    .and_return(Time.parse(time))
       @crl.next_update = time
       @crl.next_update.should == Time.parse(time)
     end
@@ -80,8 +92,16 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       signer.should_receive(:subject).and_return(name)
       private_key = OpenSSL::PKey::RSA.new(@rsa_private_key)
       signer.should_receive(:private_key).and_return(private_key)
-      @crl.last_update= '2010/09/21 00:00:00'
-      @crl.next_update = '2010/10/21 00:00:00'
+      time = '2010/09/21 00:00:00'
+      ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                    .with(time) \
+                    .and_return(Time.parse(time))
+      @crl.last_update = time
+      time = '2010/10/21 00:00:00'
+      ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                    .with(time) \
+                    .and_return(Time.parse(time))
+      @crl.next_update = time
       subject = [{'CN' => 'CA'}]
       @crl.sign(:signer => signer).class.should == ZZZ::CA::CRL
     end
@@ -93,8 +113,16 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       signer.should_receive(:subject).and_return(name)
       private_key = OpenSSL::PKey::RSA.new(@rsa_private_key)
       signer.should_receive(:private_key).and_return(private_key)
-      @crl.last_update= '2010/09/21 00:00:00'
-      @crl.next_update = '2010/10/21 00:00:00'
+      time = '2010/09/21 00:00:00'
+      ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                    .with(time) \
+                    .and_return(Time.parse(time))
+      @crl.last_update= time
+      time = '2010/10/21 00:00:00'
+      ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                    .with(time) \
+                    .and_return(Time.parse(time))
+      @crl.next_update = time
       subject = [{'CN' => 'CA'}]
       @crl.sign(:signer => signer, :version => 0)
       @crl.version.should == 0
@@ -104,7 +132,11 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       2.times do |serial|
         revoked = OpenSSL::X509::Revoked.new
         revoked.serial = serial
-        revoked.time = time = Time.now
+        time = Time.now
+        revoked.time = time
+        ZZZ::CA::Utils.should_receive(:encode_datetime) \
+                      .with(time.to_s) \
+                      .and_return(time)
         @crl.add_revoked(:serial => serial, :datetime => time.to_s).serial.should == revoked.serial
       end
     end
