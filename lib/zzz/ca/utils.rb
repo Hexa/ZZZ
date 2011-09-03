@@ -2,7 +2,7 @@
 
 require 'openssl'
 require 'time'
-require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
+#require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'subject_encoder')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'extension_encoder')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'error')
@@ -15,7 +15,7 @@ module ZZZ
       ## デフォルトの Exponent
       DEFAULT_PUBLIC_EXPONENT = 65567
       ## デフォルトの公開鍵のアルゴリズム
-      DEFAULT_PUBLIC_KEY_ALGORITHM = PUBLIC_KEY_ALGORITHMS[:RSA]
+      DEFAULT_PUBLIC_KEY_ALGORITHM = :RSA #PUBLIC_KEY_ALGORITHMS[:RSA]
 
       ## 秘密鍵／公開鍵の生成
       def self.gen_pkey(params)

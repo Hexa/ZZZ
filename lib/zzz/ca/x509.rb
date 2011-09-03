@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'utils')
+#require File.join(File.expand_path(File.dirname(__FILE__)), 'utils')
 
 module ZZZ
   module CA
