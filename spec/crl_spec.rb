@@ -23,7 +23,6 @@ Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 CRL-----
       CRL
-
       @rsa_private_key = <<-PrivateKey
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQD4GGnFOZay4OlHKRFZUP0o2IbNYFpkkE52iTslwy9HriXLA1rU
@@ -42,20 +41,28 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
       PrivateKey
 
-      ZZZ::CA::Utils.should_receive(:new).with(:crl, nil).and_return(OpenSSL::X509::CRL.new)
+      ZZZ::CA::Utils.should_receive(:new)
+                    .with(:crl, nil)
+                    .and_return(OpenSSL::X509::CRL.new)
       @crl = ZZZ::CA::CRL.new
+      @last_update = '2010/09/21 00:00:00'
+      @next_update = '2010/09/21 00:00:00'
     end
 
     it "#crl=(crl_pem) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
-      ZZZ::CA::Utils.should_receive(:x509_object).with(:crl, @crl_pem).and_return(OpenSSL::X509::CRL.new(@crl_pem))
+      ZZZ::CA::Utils.should_receive(:x509_object)
+                    .with(:crl, @crl_pem)
+                    .and_return(OpenSSL::X509::CRL.new(@crl_pem))
       @crl.crl = @crl_pem
       @crl.crl.class.should == OpenSSL::X509::CRL
     end
 
     it "#crl=(der) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
-      der = OpenSSL::X509::CRL.new(@crl_pem).to_der
-      ZZZ::CA::Utils.should_receive(:x509_object).with(:crl, der).and_return(OpenSSL::X509::CRL.new(der))
-      @crl.crl = der
+      crl = OpenSSL::X509::CRL.new(@crl_pem)
+      ZZZ::CA::Utils.should_receive(:x509_object)
+                    .with(:crl, crl.to_der)
+                    .and_return(OpenSSL::X509::CRL.new(crl.to_der))
+      @crl.crl = crl.to_der
       @crl.crl.class.should == OpenSSL::X509::CRL
     end
 
@@ -68,41 +75,37 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
     end
 
     it "#last_update='2011/05/10 00:00:00' を指定した後の #last_update は '2010/09/21 00:00:00' の Time オブジェクトを返すこと" do
-      time = '2010/09/21 00:00:00'
-      ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                    .with(time) \
-                    .and_return(Time.parse(time))
-      @crl.last_update = time
-      @crl.last_update.should == Time.parse(time)
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@last_update)
+                    .and_return(Time.parse(@last_update))
+      @crl.last_update = @last_update
+      @crl.last_update.should == Time.parse(@last_update)
     end
 
     it "#next_update='2011/05/10 00:00:00' を指定した後の #next_update は '2010/09/21 00:00:00' の Time オブジェクトを返すこと" do
-      time = '2010/09/21 00:00:00'
-      ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                    .with(time) \
-                    .and_return(Time.parse(time))
-      @crl.next_update = time
-      @crl.next_update.should == Time.parse(time)
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@next_update)
+                    .and_return(Time.parse(@next_update))
+      @crl.next_update = @next_update
+      @crl.next_update.should == Time.parse(@next_update)
     end
 
     it "#sign(:signer => signer) は ZZZ::CA::CRL オブジェクトを返すこと" do
       signer = double('signer')
       name = OpenSSL::X509::Name.new
       name.add_entry('CN', 'cn')
-      signer.should_receive(:subject).and_return(name)
-      private_key = OpenSSL::PKey::RSA.new(@rsa_private_key)
-      signer.should_receive(:private_key).and_return(private_key)
-      time = '2010/09/21 00:00:00'
-      ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                    .with(time) \
-                    .and_return(Time.parse(time))
-      @crl.last_update = time
-      time = '2010/10/21 00:00:00'
-      ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                    .with(time) \
-                    .and_return(Time.parse(time))
-      @crl.next_update = time
-      subject = [{'CN' => 'CA'}]
+      signer.should_receive(:subject)
+            .and_return(name)
+      signer.should_receive(:private_key)
+            .and_return(OpenSSL::PKey::RSA.new(@rsa_private_key))
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@last_update)
+                    .and_return(Time.parse(@last_update))
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@next_update)
+                    .and_return(Time.parse(@next_update))
+      @crl.last_update = @last_update
+      @crl.next_update = @next_update
       @crl.sign(:signer => signer).class.should == ZZZ::CA::CRL
     end
 
@@ -110,20 +113,18 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       signer = double('signer')
       name = OpenSSL::X509::Name.new
       name.add_entry('CN', 'cn')
-      signer.should_receive(:subject).and_return(name)
-      private_key = OpenSSL::PKey::RSA.new(@rsa_private_key)
-      signer.should_receive(:private_key).and_return(private_key)
-      time = '2010/09/21 00:00:00'
-      ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                    .with(time) \
-                    .and_return(Time.parse(time))
-      @crl.last_update= time
-      time = '2010/10/21 00:00:00'
-      ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                    .with(time) \
-                    .and_return(Time.parse(time))
-      @crl.next_update = time
-      subject = [{'CN' => 'CA'}]
+      signer.should_receive(:subject)
+            .and_return(name)
+      signer.should_receive(:private_key)
+            .and_return(OpenSSL::PKey::RSA.new(@rsa_private_key))
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@last_update)
+                    .and_return(Time.parse(@last_update))
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@next_update)
+                    .and_return(Time.parse(@next_update))
+      @crl.last_update= @last_update
+      @crl.next_update = @next_update
       @crl.sign(:signer => signer, :version => 0)
       @crl.version.should == 0
     end
@@ -132,18 +133,20 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
       2.times do |serial|
         revoked = OpenSSL::X509::Revoked.new
         revoked.serial = serial
-        time = Time.now
-        revoked.time = time
-        ZZZ::CA::Utils.should_receive(:encode_datetime) \
-                      .with(time.to_s) \
-                      .and_return(time)
-        @crl.add_revoked(:serial => serial, :datetime => time.to_s).serial.should == revoked.serial
+        now = Time.now
+        revoked.time = now
+        ZZZ::CA::Utils.should_receive(:encode_datetime)
+                      .with(now.to_s)
+                      .and_return(now)
+        @crl.add_revoked(:serial => serial, :datetime => now.to_s).serial.should == revoked.serial
       end
     end
 
     after do
       @crl = nil
       @crl_pem = nil
+      @last_update = nil
+      @next_update = nil
     end
   end
 end
