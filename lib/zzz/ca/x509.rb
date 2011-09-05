@@ -36,13 +36,13 @@ module ZZZ
       def initialize(type, pem = nil)
         @certificates = {}
         @extensions = {}
-        @x509 = CA::Utils::new(type, pem)
+        @x509 = ZZZ::CA::Utils::new(type, pem)
       end
 
       def method_missing(name, *args)
         case name.to_s
         when /^(subject|issuer)=$/
-          subject = CA::Utils::encode_subject(args[0])
+          subject = ZZZ::CA::Utils::encode_subject(args[0])
           @x509.__send__(name, subject)
         when /^.+=$/
           @x509.__send__(name, args[0])
@@ -53,7 +53,7 @@ module ZZZ
 
       ## 秘密鍵／公開鍵の生成
       def gen_private_key(params = {})
-        @private_key = CA::Utils::gen_pkey(params)
+        @private_key = ZZZ::CA::Utils::gen_pkey(params)
         @x509.public_key = @private_key
         @private_key
       end
@@ -62,7 +62,7 @@ module ZZZ
       def encrypted_private_key(params)
         algorithm = params[:algorithm]
         passphrase = params[:passphrase]
-        @private_key.export(CA::Utils::cipher(algorithm), passphrase)
+        @private_key.export(ZZZ::CA::Utils::cipher(algorithm), passphrase)
       end
 
       ## 署名アルゴリズムの取得
@@ -78,7 +78,7 @@ module ZZZ
 
       ## 証明書や CRL の Extensions で使用する、この証明書の発行者の証明書の指定
       def issuer_certificate=(certificate)
-        @certificates[:issuer_certificate] = CA::Utils::x509_object(:certificate, certificate)
+        @certificates[:issuer_certificate] = ZZZ::CA::Utils::x509_object(:certificate, certificate)
       end
 
       ## 証明書や CRL の Extensions で使用する、この証明書の発行者の証明書取得
@@ -88,7 +88,7 @@ module ZZZ
 
       ## この証明書の発行元になる CSR の指定
       def subject_request=(request)
-        @certificates[:subject_request] = CA::Utils::x509_object(:request, request)
+        @certificates[:subject_request] = ZZZ::CA::Utils::x509_object(:request, request)
       end
 
       ## この証明書の発行元になる CSR の取得
@@ -98,9 +98,9 @@ module ZZZ
 
       ## Extension の指定
       def extensions=(extensions, params = {})
-        params[:certificates] = @certificates
+        params[:certificates] ||= @certificates
         @extensions = extensions
-        @x509.extensions = CA::Utils::encode_extensions(@extensions, params)
+        @x509.extensions = ZZZ::CA::Utils::encode_extensions(@extensions, params)
       end
 
       ## Extension の指定
@@ -109,7 +109,7 @@ module ZZZ
         extension = {}
         extension[oid] = {:values => values, :critical => critical}
         @extensions.merge!(extension)
-        @x509.extensions = CA::Utils::encode_extensions(@extensions, params)
+        @x509.extensions = ZZZ::CA::Utils::encode_extensions(@extensions, params)
       end
 
       ## 証明書への署名
