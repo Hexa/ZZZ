@@ -4,6 +4,7 @@ require 'rspec'
 require 'time'
 require 'openssl'
 require 'zzz/ca/certificate'
+require 'zzz/ca/error'
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::Certificate do
@@ -192,6 +193,12 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#sign は ZZZ::CA::Certificate オブジェクトを返すこと" do
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@not_before)
+                    .and_return(Time.parse(@not_before))
+      ZZZ::CA::Utils.should_receive(:encode_datetime)
+                    .with(@not_after)
+                    .and_return(Time.parse(@not_after))
       ZZZ::CA::Utils.should_receive(:encode_subject)
                     .with(@ca_subject)
                     .and_return(@ca_name)
@@ -233,9 +240,13 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#sign(:signer => ca) で CA が署名した後の証明書の発行者は署名した CA であること" do
-      ca = ZZZ::CA::Certificate.new
-      ca.certificate = (@certificate_pem)
-      ca.private_key = @rsa_private_key_pem
+      ca = double('signer')
+      name = OpenSSL::X509::Name.new
+      name.add_entry('CN', 'CA')
+      ca.should_receive(:subject)
+        .and_return(name)
+      ca.should_receive(:private_key)
+        .and_return(@rsa_private_key)
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_before)
                     .and_return(Time.parse(@not_before))
@@ -257,7 +268,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.subject = @server_subject
       @certificate.gen_private_key(params)
       @certificate.sign(:serial => 2, :signer => ca)
-      @certificate.issuer.to_s.should == @ca_name.to_s
+      @certificate.issuer.to_s.should == name.to_s
     end
 
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
@@ -364,6 +375,10 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it do
+      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      ZZZ::CA::Utils.should_receive(:x509_object)
+                    .with(:certificate, @certificate_pem)
+                    .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
       @certificate.certificate = @certificate_pem
       @certificate.verify(@certificate.public_key).should be_true
     end
