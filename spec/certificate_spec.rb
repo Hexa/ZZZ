@@ -429,4 +429,12 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     @not_before = nil
     @not_after = nil
   end
+
+  context '証明書を PKCS#12 にする場合' do
+    it do
+      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
+      certificate.private_key = @rsa_private_key_pem
+      certificate.pkcs12('password').class.should == OpenSSL::PKCS12
+    end
+  end
 end

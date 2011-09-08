@@ -10,10 +10,12 @@ Methods
 class Request
 -------------
 
-::new
-^^^^^
+::new(pem = nil)
+^^^^^^^^^^^^^^^^
 
 Request オブジェクトを生成します．
+
+pem（CSR）が指定されている場合には，その CSR の Request オブジェクトを生成します．
 
 #request
 ^^^^^^^^

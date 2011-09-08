@@ -113,7 +113,7 @@ CSR の作成
   certificate.public_key = request.public_key
   certificate.not_before = '2010/09/21 00:00:00'
   certificate.not_after = '2010/10/21 00:00:00'
-  certificate.subject_request = request.subject
+  certificate.subject = request.subject
   certificate.issuer_certificate = ca.to_pem
   certificate.subject_request = request.to_pem
   certificate.add_extension('basicConstraints', ['CA:FALSE'])

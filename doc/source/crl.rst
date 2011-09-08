@@ -10,10 +10,25 @@ Methods
 class CRL
 ---------
 
-::new
-^^^^^
+::new(pem = nil)
+^^^^^^^^^^^^^^^^
 
 CRL オブジェクトを生成します．
+
+pem（CRL）が指定されている場合には，その CRL の CRL オブジェクトを生成します．
+
+
+#last_update=(datetime)
+^^^^^^^^^^^^^^^^^^^^^^^
+
+この CRL の発行日時（last_update）を指定します．
+
+
+#next_update=(datetime)
+^^^^^^^^^^^^^^^^^^^^^^^
+
+次の CRL の発行日時（next_update）を指定します．
+
 
 #add_revoked(params)
 ^^^^^^^^^^^^^^^^^^^^
