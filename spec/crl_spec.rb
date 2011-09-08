@@ -138,7 +138,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
         ZZZ::CA::Utils.should_receive(:encode_datetime)
                       .with(now.to_s)
                       .and_return(now)
-        @crl.add_revoked(:serial => serial, :datetime => now.to_s).serial.should == revoked.serial
+        @crl.add_revoked(:serial => serial, :datetime => now.to_s, :reason => 'cACompromise').serial.should == revoked.serial
       end
     end
 
