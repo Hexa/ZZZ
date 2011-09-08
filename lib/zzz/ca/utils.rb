@@ -1,9 +1,8 @@
-#!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
 require 'openssl'
 require 'time'
-require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
+#require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'subject_encoder')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'extension_encoder')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'error')
@@ -16,7 +15,7 @@ module ZZZ
       ## デフォルトの Exponent
       DEFAULT_PUBLIC_EXPONENT = 65567
       ## デフォルトの公開鍵のアルゴリズム
-      DEFAULT_PUBLIC_KEY_ALGORITHM = PUBLIC_KEY_ALGORITHMS[:RSA]
+      DEFAULT_PUBLIC_KEY_ALGORITHM = :RSA #PUBLIC_KEY_ALGORITHMS[:RSA]
 
       ## 秘密鍵／公開鍵の生成
       def self.gen_pkey(params)
@@ -34,14 +33,14 @@ module ZZZ
       end
 
       ## OpenSSL::X509 オブジェクトの生成
-      def self.new(type)
+      def self.new(type, pem = nil)
         case type
         when :certificate
-          OpenSSL::X509::Certificate.new
+          pem.nil? ? OpenSSL::X509::Certificate.new : OpenSSL::X509::Certificate.new(pem)
         when :request
-          OpenSSL::X509::Request.new
+          pem.nil? ? OpenSSL::X509::Request.new : OpenSSL::X509::Request.new(pem)
         when :crl
-          OpenSSL::X509::CRL.new
+          pem.nil? ? OpenSSL::X509::CRL.new : OpenSSL::X509::CRL.new(pem)
         else
           raise ZZZ::CA::Error
         end
@@ -57,13 +56,15 @@ module ZZZ
         extension_encoder = ZZZ::CA::ExtensionEncoder.new
         extensions.each_pair do |oid, values|
           critical = values[:critical] || false
+          type = values[:type]
           extension_encoder.add(
             :oid => oid,
             :values => values[:values],
-            :critical => critical)
+            :critical => critical,
+            :type => type)
         end
 
-        certificates = params[:certificates]
+        certificates = params[:certificates] || {}
         certificates.each_pair.each do |key, certificate|
           extension_encoder.__send__("#{key}=".to_sym, certificate)
         end
@@ -73,12 +74,8 @@ module ZZZ
 
       ## DN のエンコード
       def self.encode_subject(subject)
-        if subject.instance_of?(OpenSSL::X509::Name)
-          subject
-        else
-          subject_encoder = ZZZ::CA::SubjectEncoder.new(subject)
-          subject_encoder.encode
-        end
+        encode = ->(subject) { ZZZ::CA::SubjectEncoder.new(subject).encode }
+        subject.instance_of?(OpenSSL::X509::Name) ? subject : encode.call(subject)
       end
 
       ## OpenSSL::Cipher オブジェクトの生成
@@ -98,38 +95,8 @@ module ZZZ
         end
       end
 
-      ## PEM からの OpenSSL::X509 オブジェクトの生成
-      def self.gen_x509_object(pem)
-        case get_asn1_type(pem)
-        when :certificate
-          OpenSSL::X509::Certificate.new(pem)
-        when :request
-          OpenSSL::X509::Request.new(pem)
-        when :crl
-          OpenSSL::X509::CRL.new(pem)
-        end
-      end
-
-      ## DER からの OpenSSL::X509 オブジェクトの生成
-      def self.gen_x509_object_from_der(der)
-        raise ZZZ::CA::Error unless verify_asn1(der)
-        begin
-          OpenSSL::X509::Certificate.new(der)
-        rescue
-          begin
-            OpenSSL::X509::Request.new(der)
-          rescue
-            begin
-              OpenSSL::X509::CRL.new(der)
-            rescue => ex
-              raise ZZZ::CA::Error
-            end
-          end
-        end
-      end
-
       ## PEM からの証明書、CSR、CRL の判別
-      def self.get_asn1_type(pem)
+      def self.asn1_type(pem)
         case pem
         when /^-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----$/m
           :certificate
@@ -139,6 +106,20 @@ module ZZZ
           :crl
         else
           raise ZZZ::CA::Error
+        end
+      end
+
+      ## PEM または DER からの OpenSSL::X509 オブジェクトの生成
+      def self.x509_object(type, pem_or_der)
+        case type
+        when :certificate
+          OpenSSL::X509::Certificate.new(pem_or_der)
+        when :request
+          OpenSSL::X509::Request.new(pem_or_der)
+        when :crl
+          OpenSSL::X509::CRL.new(pem_or_der)
+        else
+          raise ZZZ::CA::Error, "#{__LINE__}: Unsupported type: #{type}"
         end
       end
 

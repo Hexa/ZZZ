@@ -1,9 +1,8 @@
-#!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
 require 'rspec'
 require 'zzz/ca/extension_encoder'
-include 
+require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::ExtensionEncoder do
   context 'Extension を ASN1 形式に変換するとき' do
@@ -108,12 +107,22 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     end
 
     it '#encode は add で追加した数の X509::Extension オブジェクトの配列を返すこと' do
+      @extension_encoder.add(:oid => 'crlNumber', :values => [1])
+      @extension_encoder.encode.should have(1).items
+    end
+
+    it '#encode は add で追加した数の X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'])
       @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
       @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
         'TLS Web Server Authentication',
         'TLS Web Client Authentication'])
       @extension_encoder.encode.should have(3).items
+    end
+
+    it 'oid が CRLReson の場合に add で Extension を追加した後の #encode は 1 つの X509::Extension オブジェクトを返すこと' do
+      @extension_encoder.add(:oid => 'CRLReason', :values => ['keyCompromise'], :type => :enumerated)
+      @extension_encoder.encode.should be_an_instance_of OpenSSL::X509::Extension
     end
 
     it '#encode は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
@@ -145,28 +154,46 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.get_encoded_extensions[rand(2)].should be_an_instance_of OpenSSL::X509::Extension
     end
 
-    it '#add で不正な ASN.1 型を指定した場合の #encode は RbCertificate::Error Exception を返すこと' do
+    it '#add で不正な ASN.1 型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.13', :values => ['comment'], :type => :aaa)
       lambda { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end
 
-    it '#encode の前の #get_encoded_extensions は RbCertificate::Error Exception を返すこと' do
+    it '#encode の前の #get_encoded_extensions は ZZZ::CA::Error Exception を返すこと' do
       lambda { @extension_encoder.get_encoded_extensions }.should raise_error( ZZZ::CA::Error )
     end
 
-    it '#subject_request= で CSR (OpenSSL::X509::Request オブジェクト) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
+    it '#subject_request= で CSR (PEM) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
       @extension_encoder.subject_request = @request_pem
       @extension_encoder.subject_request.should be_an_instance_of OpenSSL::X509::Request
     end
 
-    it '#subject_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#subject_request= で CSR (OpenSSL::X509::Request オブジェクト) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
+      @extension_encoder.subject_request = OpenSSL::X509::Request.new(@request_pem)
+      @extension_encoder.subject_request.should be_an_instance_of OpenSSL::X509::Request
+    end
+
+    it '#subject_request= で文字列または OpenSSL::X509::Request オブジェクト以外のオブジェクトを設定する場合は例外を返すこと' do
+      lambda { @extension_encoder.subject_request = 1 }.should raise_error( ZZZ::CA::Error )
+    end
+
+    it '#subject_certificate= で証明書 (PEM) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
       @extension_encoder.subject_certificate = @certificate_pem
       @extension_encoder.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
     end
 
-    it '#issuer_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #issuer_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#subject_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
+      @extension_encoder.subject_certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      @extension_encoder.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
+    end
+
+    it '#issuer_certificate= で証明書 (PEM) を指定した後の #issuer_certificate は OpenSSL::X509::Certificate を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.issuer_certificate.should be_an_instance_of OpenSSL::X509::Certificate
+    end
+
+    it '#issuer_certificate= で文字列または OpenSSL::X509::Certificate オブジェクト以外のオブジェクトを設定する場合は例外を返すこと' do
+      lambda { @extension_encoder.issuer_certificate = nil }.should raise_error( ZZZ::CA::Error )
     end
 
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は OpenSSL::X509::Extension の配列を返すこと' do
@@ -187,7 +214,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.encode[0].oid.should  == 'authorityKeyIdentifier'
     end
 
-    it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid:true が追加された #encode は RbCertificate::Error Exception を返すこと' do
+    it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid:true が追加された #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'])
       lambda { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end

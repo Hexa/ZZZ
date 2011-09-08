@@ -10,10 +10,25 @@ Methods
 class Certificate
 -----------------
 
-::new
-^^^^^
+::new(pem = nil)
+^^^^^^^^^^^^^^^^
 
 Certificate オブジェクトを生成します．
+
+pem（証明書）が指定されている場合には，その証明書の Certificate オブジェクトを生成します．
+
+
+#not_before=(datetime)
+^^^^^^^^^^^^^^^^^^^^^^
+
+証明書が有効になる日時（not_before）を指定します．
+
+
+#not_before=(datetime)
+^^^^^^^^^^^^^^^^^^^^^^
+
+証明書が無効になる日時（not_after）を指定します．
+
 
 #certificate
 ^^^^^^^^^^^^
@@ -33,6 +48,15 @@ pem_or_der には PEM 形式，または，DER 形式の証明書を指定しま
 作成済みの秘密鍵を Certificate オブジェクトに指定します．
 
 private_key には PEM または、OpenSSL::PKey オブジェクトを指定します．
+
+
+#private_key
+^^^^^^^^^^^^
+
+秘密鍵を取得します．
+
+取得できる秘密鍵は OpenSSL::PKey オブジェクトです．
+
 
 #sign(params)
 ^^^^^^^^^^^^^

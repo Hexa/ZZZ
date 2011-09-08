@@ -1,4 +1,3 @@
-#!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
 require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
@@ -11,8 +10,8 @@ module ZZZ
       ## デフォルトの CSR のバージョン
       DEFAULT_VERSION = ZZZ::CA::VERSIONS[:REQUESTv2]
 
-      def initialize
-        super(:request)
+      def initialize(pem = nil)
+        super(:request, pem)
       end
 
       def method_missing(name, *args)
@@ -26,21 +25,19 @@ module ZZZ
 
       ## 秘密鍵の指定
       def private_key=(private_key)
-        @private_key = if private_key.instance_of?(String)
+        @private_key = case "#{private_key.class}"
+                       when 'String'
                          CA::Utils::get_pkey_object(private_key)
-                       else
+                       when 'OpenSSL::PKey::RSA', 'OpenSSL::PKey::DSA'
                          private_key
+                       else
+                         raise ZZZ::CA::Error
                        end
       end
 
       ## PEM 形式の CSR の指定
       def request=(pem_or_der)
-        case CA::Utils::verify_asn1(pem_or_der)
-        when true
-          @x509 = CA::Utils::gen_x509_object_from_der(pem_or_der)
-        when false
-          @x509 = CA::Utils::gen_x509_object(pem_or_der)
-        end
+        @x509 = CA::Utils::x509_object(:request, pem_or_der)
       end
 
       ## CSR (OpenSSL::X509::Request オブジェクト) の取得

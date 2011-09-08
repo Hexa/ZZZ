@@ -1,4 +1,3 @@
-#!/opt/local/bin/ruby1.9
 # -*- coding: utf-8 -*-
 
 require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
@@ -9,8 +8,8 @@ module ZZZ
       ## デフォルトの CRL のバージョン
       DEFAULT_VERSION = VERSIONS[:CRLv2]
 
-      def initialize
-        super(:crl)
+      def initialize(pem = nil)
+        super(:crl, pem)
       end
 
       def method_missing(name, *args)
@@ -25,12 +24,7 @@ module ZZZ
 
       ## PEM 形式の CRL の指定
       def crl=(pem_or_der)
-        case CA::Utils::verify_asn1(pem_or_der)
-        when true
-          @x509 = CA::Utils::gen_x509_object_from_der(pem_or_der)
-        when false
-          @x509 = CA::Utils::gen_x509_object(pem_or_der)
-        end
+        @x509 = CA::Utils::x509_object(:crl, pem_or_der)
       end
 
       ## CRL (OpenSSL::X509::CRL オブジェクト) の取得
@@ -40,12 +34,22 @@ module ZZZ
 
       ## 失効させる証明書 (シリアル) の指定
       def add_revoked(params)
+        revoked = revoke(params)
+        @x509.add_revoked(revoked)
+      end
+
+      def revoke(params)
         serial = params[:serial]
         revoked_time = params[:datetime]
         revoked = OpenSSL::X509::Revoked.new
         revoked.serial = serial
         revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
-        @x509.add_revoked(revoked)
+        unless params[:reason].nil?
+          reason = params[:reason]
+          revoked_reason = CA::Utils::encode_extensions('CRLReason' => {:values => [reason], :type => :enumerated})
+          revoked.add_extension(revoked_reason)
+        end
+        revoked
       end
 
       ## CRL への署名
