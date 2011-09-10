@@ -98,9 +98,22 @@ module ZZZ
 
       ## Extension の指定
       def extensions=(extensions, params = {})
-        params[:certificates] ||= @certificates
         @extensions = extensions
-        @x509.extensions = ZZZ::CA::Utils::encode_extensions(@extensions, params)
+        extensions.each_pair do |oid, values|
+          v = ''
+          critical = false
+          values.each_pair do |key, value|
+            case key
+            when :values
+              v = value
+            when :critical
+              critical = value
+            else
+              next
+            end
+          end
+          add_extension(oid, v, critical, params)
+        end
       end
 
       ## Extension の指定

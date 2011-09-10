@@ -301,7 +301,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.signature_algorithm.should == 'dsaWithSHA1'
     end
 
-    it "#add_extension('oid', ['value1', 'value2'], critical = true}) を指定して、署名した後の証明書は指定した extension を含んでいること" do
+    it "#extension = extensions を指定して、署名した後の証明書は指定した extension を含んでいること" do
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_before)
                     .and_return(Time.parse(@not_before))
@@ -331,44 +331,10 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.subject = @ca_subject
       @certificate.subject_request = @request_pem
       @certificate.gen_private_key(params)
-
-      @certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:1'], true)
-      @certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
-      @certificate.add_extension('subjectKeyIdentifier', ['hash'])
-      @certificate.sign(:serial => 1)
-      @certificate.extensions.to_s.should == extensions.to_s
-    end
-
-    it "#extension = extensions を指定して、署名した後の証明書は指定した extension を含んでいること" do
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@not_before)
-                    .and_return(Time.parse(@not_before))
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@not_after)
-                    .and_return(Time.parse(@not_after))
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@ca_subject)
-                    .and_return(@ca_name)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
-                    .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .and_return(@ca_name)
-      extensions = []
-      extension_factory = OpenSSL::X509::ExtensionFactory.new
-      extensions << extension_factory.create_ext('basicConstraints', 'CA:TRUE, pathlen:1', true)
-      extensions << extension_factory.create_ext('keyUsage', 'Certificate Sign, CRL Sign', false)
-      ZZZ::CA::Utils.should_receive(:encode_extensions)
-                    .exactly(1).times
-                    .and_return(extensions)
-      @certificate.not_before = @not_before
-      @certificate.not_after = @not_after
-      @certificate.subject = @ca_subject
-      @certificate.gen_private_key(params)
       @certificate.extensions = {'basicConstraints' =>
                                   {:values => ['CA:TRUE', 'pathlen:1'], :critical => true},
-                                'keyUsage' => {:values => ['keyCertSign', 'cRLSign']}}
+                                'keyUsage' => {:values => ['keyCertSign', 'cRLSign']},
+                                'subjectKeyIdentifier' => {:values => ['hash'], :critical => false}}
       @certificate.sign(:serial => 1)
       @certificate.extensions.to_s.should == extensions.to_s
     end
