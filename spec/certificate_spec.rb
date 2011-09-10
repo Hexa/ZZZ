@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'time'
-require 'openssl'
 require 'zzz/ca/certificate'
-require 'zzz/ca/error'
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::Certificate do
   before do
@@ -331,10 +327,13 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.subject = @ca_subject
       @certificate.subject_request = @request_pem
       @certificate.gen_private_key(params)
-      @certificate.extensions = {'basicConstraints' =>
-                                  {:values => ['CA:TRUE', 'pathlen:1'], :critical => true},
-                                'keyUsage' => {:values => ['keyCertSign', 'cRLSign']},
-                                'subjectKeyIdentifier' => {:values => ['hash'], :critical => false}}
+      @certificate.extensions = {
+        'basicConstraints' => {
+          :values => ['CA:TRUE', 'pathlen:1'], :critical => true},
+        'keyUsage' => {
+          :values => ['keyCertSign', 'cRLSign']},
+        'subjectKeyIdentifier' => {
+          :values => ['hash'], :critical => false}}
       @certificate.sign(:serial => 1)
       @certificate.extensions.to_s.should == extensions.to_s
     end

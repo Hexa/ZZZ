@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'time'
 require 'zzz/ca/request'
 
 describe ZZZ::CA::Request do

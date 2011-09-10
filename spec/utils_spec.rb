@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'time'
-require 'openssl'
 require 'zzz/ca/utils'
-require 'zzz/ca/error'
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::Utils do
   context "OpenSSL インスタンスを生成する場合" do
     it "::new(:certificate) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
-      ZZZ::CA::Utils::new(:certificate).class.should == OpenSSL::X509::Certificate
+      ZZZ::CA::Utils::new(:certificate).should be_an_instance_of OpenSSL::X509::Certificate
     end
 
     it "::new(:request) は OpenSSL::X509::Request オブジェクトを返すこと" do
-      ZZZ::CA::Utils::new(:request).class.should == OpenSSL::X509::Request
+      ZZZ::CA::Utils::new(:request).should be_an_instance_of OpenSSL::X509::Request
     end
 
     it "::new(:crl) は OpenSSL::X509::CRL オブジェクトを返すこと" do
-      ZZZ::CA::Utils::new(:crl).class.should == OpenSSL::X509::CRL
+      ZZZ::CA::Utils::new(:crl).should be_an_instance_of OpenSSL::X509::CRL
     end
 
     it "::new(:unexpected_symbol) は例外を発生させること" do
@@ -35,7 +31,7 @@ describe ZZZ::CA::Utils do
 
   context "共通鍵暗号を使用する場合" do
     it "::cipher(\"AES256\") は OpenSSL::Cipher::Cipher オブジェクトを返すこと" do
-      ZZZ::CA::Utils::cipher("AES256").class.should == OpenSSL::Cipher::Cipher
+      ZZZ::CA::Utils::cipher("AES256").should be_an_instance_of OpenSSL::Cipher::Cipher
     end
   end
 
@@ -44,12 +40,12 @@ describe ZZZ::CA::Utils do
       public_key = ZZZ::CA::Utils::gen_pkey({})
       public_key.n.to_i.to_s(2).length.should == 1024
       public_key.e.should == 65567
-      public_key.class == OpenSSL::PKey::RSA
+      public_key.should be_an_instance_of OpenSSL::PKey::RSA
     end
 
     it "::gen_pkey(:key_size => 2048, :public_exponent => 3, :public_key_algorithm => :DSA) は指定した鍵長，Exponent，公開鍵のアルゴリズムの公開鍵を生成すること" do
       public_key = ZZZ::CA::Utils::gen_pkey(:key_size => 2048, :public_key_algorithm => :DSA)
-      public_key.class == OpenSSL::PKey::DSA
+      public_key.should be_an_instance_of OpenSSL::PKey::DSA
     end
     it "::gen_pkey(:public_key_algorithm => :nil は例外を発生すること" do
       -> { ZZZ::CA::Utils::gen_pkey(:public_key_algorithm => :nil) }.should raise_error( ZZZ::CA::Error )
@@ -75,7 +71,7 @@ KCddKUmpfreEi3C5cISGn208mCX4Kl7BNiFQB79W/HfQnfuDaJtKpN0ZddUkKYwx
 yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
       PrivateKey
-      ZZZ::CA::Utils::get_pkey_object(rsa_private_key).class.should == OpenSSL::PKey::RSA
+      ZZZ::CA::Utils::get_pkey_object(rsa_private_key).should be_an_instance_of OpenSSL::PKey::RSA
     end
 
     it "::get_pkey_object(dsa_private_key) は OpenSSL::PKey::DSA オブジェクトを返すこと" do
@@ -93,7 +89,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 /9/fLjdghw+EwM0BSzA8
 -----END DSA PRIVATE KEY-----
       PrivateKey
-      ZZZ::CA::Utils::get_pkey_object(dsa_private_key_pem).class.should == OpenSSL::PKey::DSA
+      ZZZ::CA::Utils::get_pkey_object(dsa_private_key_pem).should be_an_instance_of OpenSSL::PKey::DSA
     end
 
     it "::get_pkey_object(private_key) の private_key が不正な書式の場合は例外を発生させること" do
@@ -167,15 +163,15 @@ SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
     end
 
     it "::x509_object(:certificate, certificate_pem) は OpenSSL::X509::Certificate オブジェクトを返すこと" do
-      ZZZ::CA::Utils::x509_object(:certificate, @certificate_pem).class.should == OpenSSL::X509::Certificate
+      ZZZ::CA::Utils::x509_object(:certificate, @certificate_pem).should be_an_instance_of OpenSSL::X509::Certificate
     end
 
     it "::x509_object(:request, request_pem) は OpenSSL::X509::Request オブジェクトを返すこと" do
-      ZZZ::CA::Utils::x509_object(:request, @request_pem).class.should == OpenSSL::X509::Request
+      ZZZ::CA::Utils::x509_object(:request, @request_pem).should be_an_instance_of OpenSSL::X509::Request
     end
 
     it "::x509_object(:crl, crl_pem) は OpenSSL::X509::CRL オブジェクトを返すこと" do
-      ZZZ::CA::Utils::x509_object(:crl, @crl_pem).class.should == OpenSSL::X509::CRL
+      ZZZ::CA::Utils::x509_object(:crl, @crl_pem).should be_an_instance_of OpenSSL::X509::CRL
     end
 
     it "::x509_object(:certificate, pem) の pem が不正な書式の場合は例外を発生させること" do
@@ -331,15 +327,15 @@ UPt704SNSQNfqQ==
 -----END CERTIFICATE-----
       Certificate
       @extensions = {
-        'authorityKeyIdentifier' => {:values => ['keyid:true'], :critical => true}
-      }
+        'authorityKeyIdentifier' => {
+          :values => ['keyid:true'], :critical => true}}
       @params = {}
       @params[:certificates] = {:issuer_certificate => OpenSSL::X509::Certificate.new(@certificate_pem)}
     end
 
     it "::excode_extensions(extensions, params) は配列で指定された extensions の Extension を OpenSSL::X509::Extension オブジェクトの配列を返すこと" do
-      ZZZ::CA::Utils.encode_extensions(@extensions, @params).class.should == Array
-      extensions = ZZZ::CA::Utils.encode_extensions(@extensions, @params)[0].class.should == OpenSSL::X509::Extension
+      ZZZ::CA::Utils.encode_extensions(@extensions, @params).should be_an_instance_of Array
+      extensions = ZZZ::CA::Utils.encode_extensions(@extensions, @params)[0].should be_an_instance_of OpenSSL::X509::Extension
     end
 
     after do

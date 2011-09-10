@@ -2,7 +2,6 @@
 
 require 'rspec'
 require 'zzz/ca/extension_encoder'
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::ExtensionEncoder do
   context 'Extension を ASN1 形式に変換するとき' do
@@ -42,8 +41,10 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#show は追加されている oid, values を返すこと' do
       extensions = {
-        'basicConstraints' => {:values => ['CA:TRUE', 'pathlen:0'], :critical => true},
-        'keyUsage' => {:values => ['keyCertSign', 'cRLSign']},
+        'basicConstraints' => {
+          :values => ['CA:TRUE', 'pathlen:0'], :critical => true},
+        'keyUsage' => {
+          :values => ['keyCertSign', 'cRLSign']},
         'extendedKeyUsage' => {
           :values => [
             'TLS Web Server Authentication',
@@ -54,16 +55,20 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#show は追加されている oid (番号で指定する), values を返すこと' do
       extensions = {
-        '2.16.840.1.113730.1.1' => {:values => ['01101101'], :critical => true, :type => :bit_string},
-        '2.16.840.1.113730.1.13' => {:values => ['comment']}}
+        '2.16.840.1.113730.1.1' => {
+          :values => ['01101101'], :critical => true, :type => :bit_string},
+        '2.16.840.1.113730.1.13' => {
+          :values => ['comment']}}
       extension_encoder = ZZZ::CA::ExtensionEncoder.new(extensions)
       extension_encoder.show.should == extensions
     end
 
     it '#show は追加されている oid, values を返すこと' do
       extensions = {
-        'basicConstraints' => {:values => ['CA:TRUE', 'pathlen:0'], :critical => true},
-        'keyUsage' => {:values => ['keyCertSign', 'cRLSign'], :critical => false},
+        'basicConstraints' => {
+          :values => ['CA:TRUE', 'pathlen:0'], :critical => true},
+        'keyUsage' => {
+          :values => ['keyCertSign', 'cRLSign'], :critical => false},
         'extendedKeyUsage' => {
           :values => [
             'TLS Web Server Authentication',
@@ -78,8 +83,10 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#add は oid, value を追加すること' do
       extensions = {
-        'basicConstraints' => {:values => ['CA:TRUE', 'pathlen:0'], :critical => false},
-        'keyUsage' => {:values => ['keyCertSign', 'cRLSign'], :critical => false},
+        'basicConstraints' => {
+          :values => ['CA:TRUE', 'pathlen:0'], :critical => false},
+        'keyUsage' => {
+          :values => ['keyCertSign', 'cRLSign'], :critical => false},
         'extendedKeyUsage' => {
           :values => [
             'TLS Web Server Authentication',
@@ -94,8 +101,8 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#delete は該当する oid を削除すること' do
       extensions = {
-        'basicConstraints' => {:values => ['CA:TRUE', 'pathlen:0'], :critical => true}
-      }
+        'basicConstraints' => {
+          :values => ['CA:TRUE', 'pathlen:0'], :critical => true}}
       @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
       @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
       @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
@@ -156,11 +163,11 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#add で不正な ASN.1 型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.13', :values => ['comment'], :type => :aaa)
-      lambda { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
+      -> { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end
 
     it '#encode の前の #get_encoded_extensions は ZZZ::CA::Error Exception を返すこと' do
-      lambda { @extension_encoder.get_encoded_extensions }.should raise_error( ZZZ::CA::Error )
+      -> { @extension_encoder.get_encoded_extensions }.should raise_error( ZZZ::CA::Error )
     end
 
     it '#subject_request= で CSR (PEM) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
@@ -174,7 +181,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     end
 
     it '#subject_request= で文字列または OpenSSL::X509::Request オブジェクト以外のオブジェクトを設定する場合は例外を返すこと' do
-      lambda { @extension_encoder.subject_request = 1 }.should raise_error( ZZZ::CA::Error )
+      -> { @extension_encoder.subject_request = 1 }.should raise_error( ZZZ::CA::Error )
     end
 
     it '#subject_certificate= で証明書 (PEM) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
@@ -193,7 +200,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     end
 
     it '#issuer_certificate= で文字列または OpenSSL::X509::Certificate オブジェクト以外のオブジェクトを設定する場合は例外を返すこと' do
-      lambda { @extension_encoder.issuer_certificate = nil }.should raise_error( ZZZ::CA::Error )
+      -> { @extension_encoder.issuer_certificate = nil }.should raise_error( ZZZ::CA::Error )
     end
 
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は OpenSSL::X509::Extension の配列を返すこと' do
@@ -216,7 +223,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid:true が追加された #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'])
-      lambda { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
+      -> { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end
 
     after do

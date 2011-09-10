@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'time'
-require 'openssl'
 require 'zzz/ca/crl'
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::CRL do
   context "インスタンスを生成した場合" do
