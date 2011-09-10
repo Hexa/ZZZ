@@ -62,12 +62,12 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
                     .with(@dsa_private_key_pem)
                     .and_return(@dsa_private_key)
       @request.private_key = @dsa_private_key_pem
-      @request.private_key.class.should == OpenSSL::PKey::DSA
+      @request.private_key.should be_an_instance_of OpenSSL::PKey::DSA
     end
 
     it "#private_key=dsa_private_key （OpenSSL::PKey::DSA オブジェクト）を指定した後の #private_key は OpenSSL::PKey::DSA オブジェクトを返すこと" do
       @request.private_key = @dsa_private_key
-      @request.private_key.class.should == OpenSSL::PKey::DSA
+      @request.private_key.should be_an_instance_of OpenSSL::PKey::DSA
     end
 
     it "#private_key= に不正な値を指定した場合は例外を発生させること" do
@@ -81,7 +81,7 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
                     .and_return(@dsa_private_key)
       @request.subject = @subject
       @request.gen_private_key(params)
-      @request.sign.class.should == ZZZ::CA::Request
+      @request.sign.should be_an_instance_of ZZZ::CA::Request
     end
 
     it "#sign(:version => 0) で署名した後の CSR のバージョンは 0 であること " do

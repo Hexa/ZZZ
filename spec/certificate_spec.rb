@@ -147,12 +147,12 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .with(@rsa_private_key_pem)
                     .and_return(@rsa_private_key)
       @certificate.private_key = @rsa_private_key_pem
-      @certificate.private_key.class.should == OpenSSL::PKey::RSA
+      @certificate.private_key.should be_an_instance_of OpenSSL::PKey::RSA
     end
 
     it "#private_key=rsa_private_key （OpenSSL::PKey::RSA オブジェクト）を指定した後の #private_key は OpenSSL::PKey::RSA オブジェクトを返すこと" do
       @certificate.private_key = @rsa_private_key
-      @certificate.private_key.class.should == OpenSSL::PKey::RSA
+      @certificate.private_key.should be_an_instance_of OpenSSL::PKey::RSA
     end
 
     it "#private_key=nil の場合は例外を発生させること" do
@@ -212,7 +212,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.not_after = @not_after
       @certificate.subject = @ca_subject
       @certificate.gen_private_key(params)
-      @certificate.sign(:serial => 1).class.should == ZZZ::CA::Certificate
+      @certificate.sign(:serial => 1).should be_an_instance_of ZZZ::CA::Certificate
     end
 
     it "#sign(:version => 1) で署名した後の証明書のバージョンは 1 であること" do
@@ -433,7 +433,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     it "#pkcs12(password) は OpenSSL::PKCS12 オブジェクトを返すこと" do
       certificate = ZZZ::CA::Certificate.new(@certificate_pem)
       certificate.private_key = @rsa_private_key_pem
-      certificate.pkcs12('password').class.should == OpenSSL::PKCS12
+      certificate.pkcs12('password').should be_an_instance_of OpenSSL::PKCS12
     end
   end
 end

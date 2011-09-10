@@ -54,7 +54,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
                     .with(:crl, @crl_pem)
                     .and_return(OpenSSL::X509::CRL.new(@crl_pem))
       @crl.crl = @crl_pem
-      @crl.crl.class.should == OpenSSL::X509::CRL
+      @crl.crl.should be_an_instance_of OpenSSL::X509::CRL
     end
 
     it "#crl=(der) 後の #crl は OpenSSL::X509::CRL オブジェクトを返すこと" do
@@ -63,12 +63,12 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
                     .with(:crl, crl.to_der)
                     .and_return(OpenSSL::X509::CRL.new(crl.to_der))
       @crl.crl = crl.to_der
-      @crl.crl.class.should == OpenSSL::X509::CRL
+      @crl.crl.should be_an_instance_of OpenSSL::X509::CRL
     end
 
 
     it "#add_revoked(:serial => 1, :datetime => \"2011/05/12 00:00:00\") は OpenSSL::X509::Revoked オブジェクトを返すこと" do
-      @crl.add_revoked(:serial => 1, :datetime => "2011/05/12 00:00:00").class.should == OpenSSL::X509::Revoked
+      @crl.add_revoked(:serial => 1, :datetime => "2011/05/12 00:00:00").should be_an_instance_of OpenSSL::X509::Revoked
     end
 
     it "#private_key=(rsa_private_key) は OpenSSL::PKey::RSA オブジェクトを返すこと" do
@@ -106,7 +106,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
                     .and_return(Time.parse(@next_update))
       @crl.last_update = @last_update
       @crl.next_update = @next_update
-      @crl.sign(:signer => signer).class.should == ZZZ::CA::CRL
+      @crl.sign(:signer => signer).should be_an_instance_of ZZZ::CA::CRL
     end
 
     it "#sign(:signer => signer, :version => 0) で署名した後の CRL のバージョンは 0 であること" do
