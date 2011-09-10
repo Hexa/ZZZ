@@ -95,13 +95,11 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
             .and_return(name)
       signer.should_receive(:private_key)
             .and_return(OpenSSL::PKey::RSA.new(@rsa_private_key))
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@last_update)
+      ZZZ::CA::Utils.stub!(:encode_datetime)
                     .and_return(Time.parse(@last_update))
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@next_update)
-                    .and_return(Time.parse(@next_update))
       @crl.last_update = @last_update
+      ZZZ::CA::Utils.stub!(:encode_datetime)
+                    .and_return(Time.parse(@next_update))
       @crl.next_update = @next_update
       @crl.sign(:signer => signer).should be_an_instance_of ZZZ::CA::CRL
     end
@@ -114,13 +112,11 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
             .and_return(name)
       signer.should_receive(:private_key)
             .and_return(OpenSSL::PKey::RSA.new(@rsa_private_key))
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@last_update)
+      ZZZ::CA::Utils.stub!(:encode_datetime)
                     .and_return(Time.parse(@last_update))
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@next_update)
-                    .and_return(Time.parse(@next_update))
       @crl.last_update= @last_update
+      ZZZ::CA::Utils.stub!(:encode_datetime)
+                    .and_return(Time.parse(@next_update))
       @crl.next_update = @next_update
       @crl.sign(:signer => signer, :version => 0)
       @crl.version.should == 0
