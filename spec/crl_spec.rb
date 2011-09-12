@@ -4,11 +4,8 @@ require 'rspec'
 require 'zzz/ca/crl'
 
 describe ZZZ::CA::CRL do
-  context "インスタンスを生成した場合" do
-    before do
-      module ZZZ; module CA; class Utils; end; end; end
-
-      @crl_pem = <<-CRL
+  before do
+    @crl_pem = <<-CRL
 -----BEGIN X509 CRL-----
 MIIBZTCBzwIBATANBgkqhkiG9w0BAQUFADBCMQswCQYDVQQDDAJDTjEOMAwGA1UE
 CAwFVG9reW8xCjAIBgNVBAcMAUwxCzAJBgNVBAYTAkpQMQowCAYDVQQKDAFvFw0x
@@ -19,8 +16,8 @@ cL070DDfAIHWI/XaJEZ8qNlLfEU5SuQSRdv48PrVL2pXMyxd0nw5LC+BlXaaJ9vI
 Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 CRL-----
-      CRL
-      @rsa_private_key = <<-PrivateKey
+    CRL
+    @rsa_private_key = <<-PrivateKey
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQD4GGnFOZay4OlHKRFZUP0o2IbNYFpkkE52iTslwy9HriXLA1rU
 vs66qsfMNyd37x+ZORWOlaCZkapwl4hzhbSBD7g2rlsnllmL59MbjsErues0fZkE
@@ -36,11 +33,16 @@ KCddKUmpfreEi3C5cISGn208mCX4Kl7BNiFQB79W/HfQnfuDaJtKpN0ZddUkKYwx
 /bdwnn1dAeTpKOMELlsCQQDfh366syj0bWm3hPkVp1m/4S7fn0NKcWbcW4B7iHST
 yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 -----END RSA PRIVATE KEY-----
-      PrivateKey
+    PrivateKey
 
-      ZZZ::CA::Utils.should_receive(:new)
-                    .with(:crl, nil)
-                    .and_return(OpenSSL::X509::CRL.new)
+    ZZZ::CA::Utils.should_receive(:new)
+                  .with(:crl, nil)
+                  .and_return(OpenSSL::X509::CRL.new)
+  end
+
+  context "インスタンスを生成した場合" do
+    before do
+      module ZZZ; module CA; class Utils; end; end; end
       @crl = ZZZ::CA::CRL.new
       @last_update = '2010/09/21 00:00:00'
       @next_update = '2010/09/21 00:00:00'
@@ -137,9 +139,13 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 
     after do
       @crl = nil
-      @crl_pem = nil
       @last_update = nil
       @next_update = nil
     end
+  end
+
+  after do
+    @crl_pem = nil
+    @rsa_private_key = nil
   end
 end

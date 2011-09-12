@@ -5,9 +5,8 @@ require 'rspec'
 require 'zzz/ca/request'
 
 describe ZZZ::CA::Request do
-  context "インスタンスを生成した場合" do
-    before do
-      @request_pem =<<-PEM
+  before do
+    @request_pem =<<-PEM
 -----BEGIN CERTIFICATE REQUEST-----
 MIIBaTCB0wIAMCsxEDAOBgNVBAMMB2V4YW1wbGUxCjAIBgNVBAoMAU8xCzAJBgNV
 BAYTAkpQMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDYRAol+Ha48uTbOZfK
@@ -18,8 +17,8 @@ ZMouRrcCZBKP10EKNfhOX9qo3HOfm72oK3kQVlXmIrlQKZWuUmDIHNcWbMcrxnQ/
 cttiBtpYtVg2eWJu91/Bmpj8aXRNE+KQ1Mj+9exe6ykqYG+1/sF46OdYmCEwQIxV
 FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 -----END CERTIFICATE REQUEST-----
-      PEM
-      @dsa_private_key_pem = <<-PrivateKey
+    PEM
+    @dsa_private_key_pem = <<-PrivateKey
 -----BEGIN DSA PRIVATE KEY-----
 MIIBuwIBAAKBgQCiiJlyko3kqUBdT8vFIIpTbfPfkSmMePqJ0heLYtVmGNPTWlSm
 SeY7prl2+/ccl8uXZOn0jBwGVKoOSbB/tFatjcWXTYEytgdI6fAtTEbfL0d4Mo06
@@ -32,8 +31,8 @@ We6gjaqinl0kjjZ6zUqeiMdXQ/jdHQi6nmTjPYzGXmveEOwqVytiN6PioHYmBexJ
 B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 /9/fLjdghw+EwM0BSzA8
 -----END DSA PRIVATE KEY-----
-      PrivateKey
-      @rsa_private_key_pem = <<-PrivateKey
+    PrivateKey
+    @rsa_private_key_pem = <<-PrivateKey
 -----BEGIN RSA PRIVATE KEY-----
 MIICXAIBAAKBgQDgIoRydXd8LDsXLmBPdAZmEtz39X90J/3gQ7kHpq5uvEsz5aAa
 YL1LhAzzh+1eWUWMRbow6GNpJi1D8clpotv7MrRuQJTK24G4SfxhPwiV+sGqekuF
@@ -52,6 +51,10 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       PrivateKey
       @dsa_private_key = OpenSSL::PKey::DSA.new(@dsa_private_key_pem)
       @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
+  end
+
+  context "インスタンスを生成した場合" do
+    before do
       @request = ZZZ::CA::Request.new
       @subject = [{'CN' => 'CA'}]
     end
@@ -145,12 +148,15 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
 
     after do
       @request = nil
-      @request_pem = nil
-      @dsa_private_key_pem = nil
-      @rsa_private_key_pem = nil
-      @dsa_private_key = nil
-      @rsa_private_key = nil
       @subject = nil
     end
+  end
+
+  after do
+    @request_pem = nil
+    @dsa_private_key_pem = nil
+    @rsa_private_key_pem = nil
+    @dsa_private_key = nil
+    @rsa_private_key = nil
   end
 end

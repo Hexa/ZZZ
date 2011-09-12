@@ -48,6 +48,7 @@ Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 CRL-----
     CRL
+
     @request_pem =<<-PEM
 -----BEGIN CERTIFICATE REQUEST-----
 MIIBaTCB0wIAMCsxEDAOBgNVBAMMB2V4YW1wbGUxCjAIBgNVBAoMAU8xCzAJBgNV
@@ -61,8 +62,23 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 -----END CERTIFICATE REQUEST-----
     PEM
 
-    @not_before = '2011-09-01 00:00:00 +0900'
-    @not_after = '2011-09-30 00:00:00 +0900'
+    @dsa_private_key_pem = <<-PrivateKey
+-----BEGIN DSA PRIVATE KEY-----
+MIIBuwIBAAKBgQCiiJlyko3kqUBdT8vFIIpTbfPfkSmMePqJ0heLYtVmGNPTWlSm
+SeY7prl2+/ccl8uXZOn0jBwGVKoOSbB/tFatjcWXTYEytgdI6fAtTEbfL0d4Mo06
+DUZtNB0j/5jZRAACOLvyoZWvfvFhzE8hDjlFHxL4Q4Lp2b3K7JHM3yMwnQIVAJlL
+p5l7PNmKPc/Bn0CvGhvf/oHFAoGAeevy0gkE8MSSK1Pf7aPV6B3kzbGCSdbkFPUL
+kELgqLSnpB7B2ao1O7tGDu0Yu7HSo/+/p73g3Ds6Ig+XJLgCGvYSnomBHStmebsR
+We6gjaqinl0kjjZ6zUqeiMdXQ/jdHQi6nmTjPYzGXmveEOwqVytiN6PioHYmBexJ
+7Fo3BGgCgYA/tPO6j8013kLwAp+/+zpHm1haZB5AGvo16sz9USG0w8THFvQ3DCYn
+9ZIxzMua2mmj3SdNBsVa0OEt0IvbOdYi6Okwyu+JJSl1K20GC9Sma8ioBQQbtbC/
+B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
+/9/fLjdghw+EwM0BSzA8
+-----END DSA PRIVATE KEY-----
+    PrivateKey
+
+    @dsa_private_key = OpenSSL::PKey::DSA.new(@dsa_private_key_pem)
+    @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
   end
 
   context "インスタンスを生成する場合" do
@@ -87,24 +103,6 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
   context "インスタンスを生成した場合" do
     before do
-      @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
-
-      @dsa_private_key_pem = <<-PrivateKey
------BEGIN DSA PRIVATE KEY-----
-MIIBuwIBAAKBgQCiiJlyko3kqUBdT8vFIIpTbfPfkSmMePqJ0heLYtVmGNPTWlSm
-SeY7prl2+/ccl8uXZOn0jBwGVKoOSbB/tFatjcWXTYEytgdI6fAtTEbfL0d4Mo06
-DUZtNB0j/5jZRAACOLvyoZWvfvFhzE8hDjlFHxL4Q4Lp2b3K7JHM3yMwnQIVAJlL
-p5l7PNmKPc/Bn0CvGhvf/oHFAoGAeevy0gkE8MSSK1Pf7aPV6B3kzbGCSdbkFPUL
-kELgqLSnpB7B2ao1O7tGDu0Yu7HSo/+/p73g3Ds6Ig+XJLgCGvYSnomBHStmebsR
-We6gjaqinl0kjjZ6zUqeiMdXQ/jdHQi6nmTjPYzGXmveEOwqVytiN6PioHYmBexJ
-7Fo3BGgCgYA/tPO6j8013kLwAp+/+zpHm1haZB5AGvo16sz9USG0w8THFvQ3DCYn
-9ZIxzMua2mmj3SdNBsVa0OEt0IvbOdYi6Okwyu+JJSl1K20GC9Sma8ioBQQbtbC/
-B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
-/9/fLjdghw+EwM0BSzA8
------END DSA PRIVATE KEY-----
-      PrivateKey
-      @dsa_private_key = OpenSSL::PKey::DSA.new(@dsa_private_key_pem)
-
       l = ->(subjects) do
         name = OpenSSL::X509::Name.new
         subjects.each do |e|
@@ -121,6 +119,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .at_least(:once)
                     .and_return(OpenSSL::X509::Certificate.new)
       @certificate = ZZZ::CA::Certificate.new
+      @not_before = '2011-09-01 00:00:00 +0900'
+      @not_after = '2011-09-30 00:00:00 +0900'
     end
 
     it "#gen_private_key は RAS Private Key を返すこと" do
@@ -357,14 +357,11 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 
     after do
       @certificate = nil
+      @ca_name = nil
+      @server_name = nil
+      @not_before = nil
+      @not_after = nil
     end
-  end
-
-  after do
-    @certificate_pem = nil
-    @rsa_private_key_pem = nil
-    @not_before = nil
-    @not_after = nil
   end
 
   context '証明書を PKCS#12 にする場合' do
@@ -373,5 +370,12 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       certificate.private_key = @rsa_private_key_pem
       certificate.pkcs12('password').should be_an_instance_of OpenSSL::PKCS12
     end
+  end
+
+  after do
+    @certificate_pem = nil
+    @rsa_private_key_pem = nil
+    @dsa_private_key = nil
+    @rsa_private_key = nil
   end
 end
