@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#require File.join(File.expand_path(File.dirname(__FILE__)), 'utils')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
 
 module ZZZ
@@ -17,13 +16,13 @@ module ZZZ
       end
 
       def method_missing(name, *args)
-        case name.to_s
-        when /^not_(before|after)=$/
+        case name
+        when :not_before=, :not_after=
           datetime = CA::Utils::encode_datetime(args[0])
           @x509.__send__(name, datetime)
-        when /^(private_key)|(pkey)$/
+        when :private_key, :pkey
           @private_key
-        when /^verify$/
+        when :verify
           @x509.__send__(name, args[0])
         else
           super

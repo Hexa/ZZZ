@@ -12,10 +12,10 @@ module ZZZ
       end
 
       def method_missing(name, *args)
-        case name.to_s
-        when /^subject_request$/
+        case name
+        when :subject_request
           @extension_factory.subject_request
-        when /^subject_request=$/
+        when :subject_request=
           request = args[0]
           subject_request = case "#{request.class}"
                             when 'String'
@@ -26,7 +26,7 @@ module ZZZ
                               raise ZZZ::CA::Error
                             end
         @extension_factory.__send__(name, subject_request)
-        when /^(subject|issuer)_certificate=$/
+        when :subject_certificate=, :issuer_certificate=
           cert = args[0]
           certificate = case "#{cert.class}"
                         when 'String'
@@ -37,10 +37,13 @@ module ZZZ
                           raise ZZZ::CA::Error
                         end
         @extension_factory.__send__(name, certificate)
-        when /^(.+)=$/
-          @extension_factory.__send__(name, args)
-        when /^(.+)$/
-          @extension_factory.__send__(name)
+        else
+          case name.to_s
+          when /^(.+)=$/
+            @extension_factory.__send__(name, args)
+          when /^(.+)$/
+            @extension_factory.__send__(name)
+          end
         end
       end
 

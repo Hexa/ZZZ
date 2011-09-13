@@ -2,7 +2,6 @@
 
 require 'openssl'
 require 'time'
-#require File.join(File.expand_path(File.dirname(__FILE__)), 'x509')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'subject_encoder')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'extension_encoder')
 require File.join(File.expand_path(File.dirname(__FILE__)), 'error')
