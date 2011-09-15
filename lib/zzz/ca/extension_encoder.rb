@@ -36,14 +36,9 @@ module ZZZ
                         else
                           raise ZZZ::CA::Error
                         end
-        @extension_factory.__send__(name, certificate)
+          @extension_factory.__send__(name, certificate)
         else
-          case name.to_s
-          when /^(.+)=$/
-            @extension_factory.__send__(name, args)
-          when /^(.+)$/
-            @extension_factory.__send__(name)
-          end
+          @extension_factory.__send__(name, *args)
         end
       end
 
