@@ -17,21 +17,21 @@ module ZZZ
           @extension_factory.subject_request
         when :subject_request=
           request = args[0]
-          subject_request = case "#{request.class}"
-                            when 'String'
+          subject_request = case request
+                            when String
                               OpenSSL::X509::Request.new(request)
-                            when 'OpenSSL::X509::Request'
+                            when OpenSSL::X509::Request
                               request
                             else
                               raise ZZZ::CA::Error
                             end
-        @extension_factory.__send__(name, subject_request)
+          @extension_factory.__send__(name, subject_request)
         when :subject_certificate=, :issuer_certificate=
           cert = args[0]
-          certificate = case "#{cert.class}"
-                        when 'String'
+          certificate = case cert
+                        when String
                           OpenSSL::X509::Certificate.new(cert)
-                        when 'OpenSSL::X509::Certificate'
+                        when OpenSSL::X509::Certificate
                           cert
                         else
                           raise ZZZ::CA::Error
@@ -153,13 +153,8 @@ module ZZZ
       end
 
       def get_public_key
-        if @extension_factory.issuer_certificate
-          @extension_factory.issuer_certificate.public_key
-        elsif @extension_factory.subject_request
-          @extension_factory.subject_request.public_key
-        else
-          raise ZZZ::CA::Error
-        end
+        certificate = @extension_factory.issuer_certificate || @extension_factory.subject_request || (raise ZZZ::CA::Error)
+        certificate.public_key
       end
     end
   end

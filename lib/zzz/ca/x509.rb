@@ -26,9 +26,6 @@ module ZZZ
       attr_writer :signature_algorithm
 
       ## 引数 type には生成するインスタンスを指定
-      ## * 証明書:  :certificate
-      ## * CSR:     :request
-      ## * CRL:     :crl
       def initialize(type, pem = nil)
         @certificates = {}
         @extensions = {}
