@@ -6,8 +6,11 @@ require 'zzz/ca/error'
 module ZZZ
   module CA
     class ExtensionEncoder
+      attr_reader :encoded_extensions
+
       def initialize(extensions = {})
         @extensions = extensions
+        @encoded_extensions = []
         @extension_factory = OpenSSL::X509::ExtensionFactory.new
       end
 
@@ -66,16 +69,8 @@ module ZZZ
         @extensions.delete(oid)
       end
 
-      ## エンコード済み Extensions の取得
-      def get_encoded_extensions
-        # #encode 呼び出し前は例外
-        raise ZZZ::CA::Error if @encoded_extensions.nil?
-        @encoded_extensions
-      end
-
       ## Extensions のエンコード
       def encode
-        @encoded_extensions = []
         @extensions.each_pair do |key, elements|
           values = elements[:values]
           critical = elements[:critical] || false

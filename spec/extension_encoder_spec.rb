@@ -145,20 +145,20 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.encode.should be_an_instance_of Array
     end
 
-    it '#get_encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
+    it '#encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.1', :values => ['01001001'], :type => :bit_string)
       @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
       @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
       @extension_encoder.add(:oid => '2.5.29.37', :values => ['01101100'], :type => :bit_string)
       @extension_encoder.encode
-      @extension_encoder.get_encoded_extensions[rand(4)].should be_an_instance_of OpenSSL::X509::Extension
+      @extension_encoder.encoded_extensions[rand(4)].should be_an_instance_of OpenSSL::X509::Extension
     end
 
-    it '#get_encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
+    it '#encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.add(:oid => '2.5.29.19', :values => ['CA:TRUE'])
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.1', :values => ['server', 'client'])
       @extension_encoder.encode
-      @extension_encoder.get_encoded_extensions[rand(2)].should be_an_instance_of OpenSSL::X509::Extension
+      @extension_encoder.encoded_extensions[rand(2)].should be_an_instance_of OpenSSL::X509::Extension
     end
 
     it '#add で不正な ASN.1 型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
@@ -166,8 +166,9 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       -> { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end
 
-    it '#encode の前の #get_encoded_extensions は ZZZ::CA::Error Exception を返すこと' do
-      -> { @extension_encoder.get_encoded_extensions }.should raise_error( ZZZ::CA::Error )
+    it '#encode の前の #encoded_extensions は空の配列を返すこと' do
+      @extension_encoder.encoded_extensions.should be_an_instance_of Array
+      @extension_encoder.encoded_extensions.should have(0).items
     end
 
     it '#subject_request= で CSR (PEM) を設定した後の #subject_request は OpenSSL::X509::Request オブジェクトを返すこと' do
