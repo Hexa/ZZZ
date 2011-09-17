@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#require File.join(File.expand_path(File.dirname(__FILE__)), 'utils')
-
 module ZZZ
   module CA
     VERSIONS ||= {}
@@ -25,14 +23,9 @@ module ZZZ
       ## 証明書や CRL に署名するためのデフォルトのアルゴリズム
       DEFAULT_SIGNATURE_ALGIRITHM = ZZZ::CA::SIGNATURE_ALGORITHMS[:SHA1]
 
-      ## 秘密鍵
-      #attr_reader :private_key
       attr_writer :signature_algorithm
 
       ## 引数 type には生成するインスタンスを指定
-      ## * 証明書:  :certificate
-      ## * CSR:     :request
-      ## * CRL:     :crl
       def initialize(type, pem = nil)
         @certificates = {}
         @extensions = {}
@@ -40,14 +33,12 @@ module ZZZ
       end
 
       def method_missing(name, *args)
-        case name.to_s
-        when /^(subject|issuer)=$/
+        case name
+        when :subject=, :issuer=
           subject = ZZZ::CA::Utils::encode_subject(args[0])
           @x509.__send__(name, subject)
-        when /^.+=$/
-          @x509.__send__(name, args[0])
-        when /^.+$/
-          @x509.__send__(name)
+        else
+          @x509.__send__(name, *args)
         end
       end
 
@@ -72,7 +63,7 @@ module ZZZ
         when 'itu-t'
           @signature_algorithm
         else
-          method_missing(:signature_algorithm, [])
+          method_missing(:signature_algorithm)
         end
       end
 
@@ -98,16 +89,16 @@ module ZZZ
 
       ## Extension の指定
       def extensions=(extensions, params = {})
-        params[:certificates] ||= @certificates
         @extensions = extensions
-        @x509.extensions = ZZZ::CA::Utils::encode_extensions(@extensions, params)
+        extensions.each_pair do |oid, values|
+          add_extension(oid, values[:values], values[:critical] || false, params)
+        end
       end
 
       ## Extension の指定
       def add_extension(oid, values, critical = false, params ={})
         params[:certificates] = @certificates
-        extension = {}
-        extension[oid] = {:values => values, :critical => critical}
+        extension = {oid => {:values => values, :critical => critical}}
         @extensions.merge!(extension)
         @x509.extensions = ZZZ::CA::Utils::encode_extensions(@extensions, params)
       end

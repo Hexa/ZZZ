@@ -6,41 +6,42 @@ require 'zzz/ca/error'
 module ZZZ
   module CA
     class ExtensionEncoder
+      attr_reader :encoded_extensions
+
       def initialize(extensions = {})
         @extensions = extensions
+        @encoded_extensions = []
         @extension_factory = OpenSSL::X509::ExtensionFactory.new
       end
 
       def method_missing(name, *args)
-        case name.to_s
-        when /^subject_request$/
+        case name
+        when :subject_request
           @extension_factory.subject_request
-        when /^subject_request=$/
+        when :subject_request=
           request = args[0]
-          subject_request = case "#{request.class}"
-                            when 'String'
+          subject_request = case request
+                            when String
                               OpenSSL::X509::Request.new(request)
-                            when 'OpenSSL::X509::Request'
+                            when OpenSSL::X509::Request
                               request
                             else
                               raise ZZZ::CA::Error
                             end
-        @extension_factory.__send__(name, subject_request)
-        when /^(subject|issuer)_certificate=$/
+          @extension_factory.__send__(name, subject_request)
+        when :subject_certificate=, :issuer_certificate=
           cert = args[0]
-          certificate = case "#{cert.class}"
-                        when 'String'
+          certificate = case cert
+                        when String
                           OpenSSL::X509::Certificate.new(cert)
-                        when 'OpenSSL::X509::Certificate'
+                        when OpenSSL::X509::Certificate
                           cert
                         else
                           raise ZZZ::CA::Error
                         end
-        @extension_factory.__send__(name, certificate)
-        when /^(.+)=$/
-          @extension_factory.__send__(name, args)
-        when /^(.+)$/
-          @extension_factory.__send__(name)
+          @extension_factory.__send__(name, certificate)
+        else
+          @extension_factory.__send__(name, *args)
         end
       end
 
@@ -68,24 +69,15 @@ module ZZZ
         @extensions.delete(oid)
       end
 
-      ## エンコード済み Extensions の取得
-      def get_encoded_extensions
-        # #encode 呼び出し前は例外
-        raise ZZZ::CA::Error if @encoded_extensions.nil?
-        @encoded_extensions
-      end
-
       ## Extensions のエンコード
       def encode
-        @encoded_extensions = []
         @extensions.each_pair do |key, elements|
           values = elements[:values]
           critical = elements[:critical] || false
-          extension = ''
           case key
-          when "authorityKeyIdentifier"
+          when 'authorityKeyIdentifier'
             @encoded_extensions << encode_authority_key_identifier(key, values, critical)
-          when "crlNumber"
+          when 'crlNumber'
             @encoded_extensions << encode_crl_number(key, values, critical)
           else
             type = elements[:type] || :default
@@ -140,7 +132,6 @@ module ZZZ
         values.each do |value|
           case value
           when /^keyid:true$/i
-            public_key =  get_public_key
             v = OpenSSL::Digest::SHA1.digest(public_key.to_der)
             key_id = OpenSSL::ASN1::ASN1Data.new(
               v,
@@ -154,14 +145,11 @@ module ZZZ
         OpenSSL::X509::Extension.new(key, encoded_values, critical)
       end
 
-      def get_public_key
-        if @extension_factory.issuer_certificate
-          @extension_factory.issuer_certificate.public_key
-        elsif @extension_factory.subject_request
-          @extension_factory.subject_request.public_key
-        else
-          raise ZZZ::CA::Error
-        end
+      ## 公開鍵の取得
+      def public_key
+        ## TODO: 書き直す
+        certificate = @extension_factory.issuer_certificate || @extension_factory.subject_request || (raise ZZZ::CA::Error)
+        certificate.public_key
       end
     end
   end

@@ -1,20 +1,12 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'time'
-require 'openssl'
-require 'zzz/ca/utils'
 require 'zzz/ca/subject_encoder'
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe ZZZ::CA::SubjectEncoder do
   context "インスタンスを生成した場合" do
     before do
       @subject_encoder = ZZZ::CA::SubjectEncoder.new
-    end
-
-    it "#show は空の配列を返すこと" do
-      @subject_encoder.show.should == []
     end
 
     it "#add(oid, value) は追加した {oid => value} の配列を返すこと" do
@@ -54,10 +46,6 @@ describe ZZZ::CA::SubjectEncoder do
     before do
       @name = [{'C' => 'JP'}, {'C' => 'JP'}, {'CN' => 'cn'},  {'CN' => 'cn'}]
       @subject_encoder = ZZZ::CA::SubjectEncoder.new(@name)
-    end
-
-    it "#show は .new の引数で指定した配列を返すこと" do
-      @subject_encoder.show.should == @name
     end
 
     it "#add(oid, value) は追加した {oid => value} の配列を返すこと" do

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'time'
 require 'openssl'
-require 'zzz/ca/certificate'
+require 'time'
 require 'zzz/ca/error'
-require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require 'zzz/ca/certificate'
 
 describe ZZZ::CA::Certificate do
   before do
@@ -52,6 +51,7 @@ Uo/n76qbsYDFWsllACWBNLYuz4ZdBQjWRYX3sxanAko2w1F8Ka1GgKvwFI+o68SY
 SedKdfhDSfXje1DPji8PMlEX2lMwvnYrmg==
 -----END X509 CRL-----
     CRL
+
     @request_pem =<<-PEM
 -----BEGIN CERTIFICATE REQUEST-----
 MIIBaTCB0wIAMCsxEDAOBgNVBAMMB2V4YW1wbGUxCjAIBgNVBAoMAU8xCzAJBgNV
@@ -65,8 +65,23 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 -----END CERTIFICATE REQUEST-----
     PEM
 
-    @not_before = '2011-09-01 00:00:00 +0900'
-    @not_after = '2011-09-30 00:00:00 +0900'
+    @dsa_private_key_pem = <<-PrivateKey
+-----BEGIN DSA PRIVATE KEY-----
+MIIBuwIBAAKBgQCiiJlyko3kqUBdT8vFIIpTbfPfkSmMePqJ0heLYtVmGNPTWlSm
+SeY7prl2+/ccl8uXZOn0jBwGVKoOSbB/tFatjcWXTYEytgdI6fAtTEbfL0d4Mo06
+DUZtNB0j/5jZRAACOLvyoZWvfvFhzE8hDjlFHxL4Q4Lp2b3K7JHM3yMwnQIVAJlL
+p5l7PNmKPc/Bn0CvGhvf/oHFAoGAeevy0gkE8MSSK1Pf7aPV6B3kzbGCSdbkFPUL
+kELgqLSnpB7B2ao1O7tGDu0Yu7HSo/+/p73g3Ds6Ig+XJLgCGvYSnomBHStmebsR
+We6gjaqinl0kjjZ6zUqeiMdXQ/jdHQi6nmTjPYzGXmveEOwqVytiN6PioHYmBexJ
+7Fo3BGgCgYA/tPO6j8013kLwAp+/+zpHm1haZB5AGvo16sz9USG0w8THFvQ3DCYn
+9ZIxzMua2mmj3SdNBsVa0OEt0IvbOdYi6Okwyu+JJSl1K20GC9Sma8ioBQQbtbC/
+B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
+/9/fLjdghw+EwM0BSzA8
+-----END DSA PRIVATE KEY-----
+    PrivateKey
+
+    @dsa_private_key = OpenSSL::PKey::DSA.new(@dsa_private_key_pem)
+    @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
   end
 
   context "インスタンスを生成する場合" do
@@ -91,40 +106,26 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
   context "インスタンスを生成した場合" do
     before do
-      @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
-
-      @dsa_private_key_pem = <<-PrivateKey
------BEGIN DSA PRIVATE KEY-----
-MIIBuwIBAAKBgQCiiJlyko3kqUBdT8vFIIpTbfPfkSmMePqJ0heLYtVmGNPTWlSm
-SeY7prl2+/ccl8uXZOn0jBwGVKoOSbB/tFatjcWXTYEytgdI6fAtTEbfL0d4Mo06
-DUZtNB0j/5jZRAACOLvyoZWvfvFhzE8hDjlFHxL4Q4Lp2b3K7JHM3yMwnQIVAJlL
-p5l7PNmKPc/Bn0CvGhvf/oHFAoGAeevy0gkE8MSSK1Pf7aPV6B3kzbGCSdbkFPUL
-kELgqLSnpB7B2ao1O7tGDu0Yu7HSo/+/p73g3Ds6Ig+XJLgCGvYSnomBHStmebsR
-We6gjaqinl0kjjZ6zUqeiMdXQ/jdHQi6nmTjPYzGXmveEOwqVytiN6PioHYmBexJ
-7Fo3BGgCgYA/tPO6j8013kLwAp+/+zpHm1haZB5AGvo16sz9USG0w8THFvQ3DCYn
-9ZIxzMua2mmj3SdNBsVa0OEt0IvbOdYi6Okwyu+JJSl1K20GC9Sma8ioBQQbtbC/
-B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
-/9/fLjdghw+EwM0BSzA8
------END DSA PRIVATE KEY-----
-      PrivateKey
-      @dsa_private_key = OpenSSL::PKey::DSA.new(@dsa_private_key_pem)
-
       l = ->(subjects) do
         name = OpenSSL::X509::Name.new
-        subjects.each do |e|
-          e.each_pair do |key, value|
-            name.add_entry(key, value)
-          end
-        end
+        subjects.each {|e| e.each_pair {|key, value| name.add_entry(key, value) }}
         name
       end
-      @ca_name = l.call(@ca_subject = [{'CN' => 'CA'}])
-      @server_name = l.call(@server_subject = [{'CN' => 'Server'}])
+
+      e = (0x21..0x7e).to_a.map {|e| e.chr }
+      v = ''
+      rand(100).times {|i| v << e[rand(e.length)] }
+      @ca_name = l.call(@ca_subject = [{'CN' => v}])
+      v = ''
+      rand(100).times {|i| v << e[rand(e.length)] }
+      @server_name = l.call(@server_subject = [{'CN' => v}])
 
       ZZZ::CA::Utils.should_receive(:new)
                     .at_least(:once)
                     .and_return(OpenSSL::X509::Certificate.new)
       @certificate = ZZZ::CA::Certificate.new
+      @not_before = '2011-09-01 00:00:00 +0900'
+      @not_after = '2011-09-30 00:00:00 +0900'
     end
 
     it "#gen_private_key は RAS Private Key を返すこと" do
@@ -147,12 +148,12 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .with(@rsa_private_key_pem)
                     .and_return(@rsa_private_key)
       @certificate.private_key = @rsa_private_key_pem
-      @certificate.private_key.class.should == OpenSSL::PKey::RSA
+      @certificate.private_key.should be_an_instance_of OpenSSL::PKey::RSA
     end
 
     it "#private_key=rsa_private_key （OpenSSL::PKey::RSA オブジェクト）を指定した後の #private_key は OpenSSL::PKey::RSA オブジェクトを返すこと" do
       @certificate.private_key = @rsa_private_key
-      @certificate.private_key.class.should == OpenSSL::PKey::RSA
+      @certificate.private_key.should be_an_instance_of OpenSSL::PKey::RSA
     end
 
     it "#private_key=nil の場合は例外を発生させること" do
@@ -166,8 +167,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#encrypted_private_key は暗号化した Private Key を返すこと" do
-      ZZZ::CA::Utils.should_receive(:get_pkey_object)
-                    .with(@rsa_private_key_pem)
+      ZZZ::CA::Utils.stub!(:get_pkey_object)
                     .and_return(OpenSSL::PKey::RSA.new(@rsa_private_key_pem))
       ZZZ::CA::Utils.should_receive(:cipher)
                     .with('AES-256-CBC')
@@ -193,26 +193,22 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#sign は ZZZ::CA::Certificate オブジェクトを返すこと" do
+      ZZZ::CA::Utils.stub!(:encode_subject)
+                    .and_return(@ca_name)
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_before)
                     .and_return(Time.parse(@not_before))
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@ca_subject)
-                    .and_return(@ca_name)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
+      ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .and_return(@ca_name)
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @certificate.subject = @ca_subject
+      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.gen_private_key(params)
-      @certificate.sign(:serial => 1).class.should == ZZZ::CA::Certificate
+      @certificate.sign(:serial => 1).should be_an_instance_of ZZZ::CA::Certificate
     end
 
     it "#sign(:version => 1) で署名した後の証明書のバージョンは 1 であること" do
@@ -222,15 +218,11 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@ca_subject)
+      ZZZ::CA::Utils.stub!(:encode_subject)
                     .and_return(@ca_name)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
+      ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .and_return(@ca_name)
+      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @certificate.subject = @ca_subject
@@ -241,10 +233,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 
     it "#sign(:signer => ca) で CA が署名した後の証明書の発行者は署名した CA であること" do
       ca = double('signer')
-      name = OpenSSL::X509::Name.new
-      name.add_entry('CN', 'CA')
       ca.should_receive(:subject)
-        .and_return(name)
+        .and_return(@ca_name)
       ca.should_receive(:private_key)
         .and_return(@rsa_private_key)
       ZZZ::CA::Utils.should_receive(:encode_datetime)
@@ -253,22 +243,20 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
-                    .and_return(@dsa_private_key)
       ZZZ::CA::Utils.should_receive(:encode_subject)
                     .with(@server_subject)
                     .and_return(@server_name)
+      ZZZ::CA::Utils.stub!(:gen_pkey)
+                    .and_return(@dsa_private_key)
+      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       ZZZ::CA::Utils.should_receive(:encode_subject)
                     .and_return(@ca_name)
-                    #.with(@ca_name)
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @certificate.subject = @server_subject
       @certificate.gen_private_key(params)
       @certificate.sign(:serial => 2, :signer => ca)
-      @certificate.issuer.to_s.should == name.to_s
+      @certificate.issuer.to_s.should == @ca_name.to_s
     end
 
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
@@ -284,15 +272,11 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@ca_subject)
+      ZZZ::CA::Utils.stub!(:encode_subject)
                     .and_return(@ca_name)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
+      ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .and_return(@ca_name)
+      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @certificate.subject = @ca_subject
@@ -301,84 +285,53 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.signature_algorithm.should == 'dsaWithSHA1'
     end
 
-    it "#add_extension('oid', ['value1', 'value2'], critical = true}) を指定して、署名した後の証明書は指定した extension を含んでいること" do
-      pending('ZZZ::CA::Utils::encode_extensions モックがエラーになるため')
+    it "#extension = extensions を指定して、署名した後の証明書は指定した extension を含んでいること" do
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_before)
                     .and_return(Time.parse(@not_before))
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@ca_subject)
+      ZZZ::CA::Utils.stub!(:encode_subject)
                     .and_return(@ca_name)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
+      request = OpenSSL::X509::Request.new(@request_pem)
+      ZZZ::CA::Utils.stub!(:x509_object)
+                    .and_return(request)
+      ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .and_return(@ca_name)
       extensions = []
       extension_factory = OpenSSL::X509::ExtensionFactory.new
       extensions << extension_factory.create_ext('basicConstraints', 'CA:TRUE, pathlen:1', true)
       extensions << extension_factory.create_ext('keyUsage', 'Certificate Sign, CRL Sign', false)
-      extension_factory.subject_request = OpenSSL::X509::Request.new(@request_pem)
+      extension_factory.subject_request = request
       extensions << extension_factory.create_ext('subjectKeyIdentifier', 'hash', false)
       ZZZ::CA::Utils.should_receive(:encode_extensions)
-                    .at_least(:thrice)
+                    .exactly(3).times
                     .and_return(extensions)
+      ZZZ::CA::Utils.stub!(:encode_subject)
+                    .and_return(@ca_name)
+      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @certificate.subject = @ca_subject
       @certificate.subject_request = @request_pem
       @certificate.gen_private_key(params)
-
-      @certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:1'], true)
-      @certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
-      @certificate.add_extension('subjectKeyIdentifier', ['hash'])
-      @certificate.sign(:serial => 1)
-      @certificate.extensions.to_s.should == extensions.to_s
-    end
-
-    it "#extension = extensions を指定して、署名した後の証明書は指定した extension を含んでいること" do
-      pending('ZZZ::CA::Utils::encode_extensions モックがエラーになるため')
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@not_before)
-                    .and_return(Time.parse(@not_before))
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@not_after)
-                    .and_return(Time.parse(@not_after))
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@ca_subject)
-                    .and_return(@ca_name)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:gen_pkey)
-                    .with(params)
-                    .and_return(@dsa_private_key)
-      extensions = []
-      extension_factory = OpenSSL::X509::ExtensionFactory.new
-      extensions << extension_factory.create_ext('basicConstraints', 'CA:TRUE, pathlen:1', true)
-      extensions << extension_factory.create_ext('keyUsage', 'Certificate Sign, CRL Sign', false)
-      ZZZ::CA::Utils.should_receive(:encode_extensions)
-                    .at_least(:thrice)
-                    .and_return(extensions)
-      @certificate.not_before = @not_before
-      @certificate.not_after = @not_after
-      @certificate.subject = @ca_subject
-      @certificate.gen_private_key(params)
-      extensions = {}
-      extensions['basicConstraints'] = {:values => ['CA:TRUE', 'pathlen:1'], :critical => true}
-      extensions['keyUsage'] = {:values => ['keyCertSign', 'cRLSign']}
-      @certificate.extensions = extensions
+      @certificate.extensions = {
+        'basicConstraints' => {
+          :values => ['CA:TRUE', 'pathlen:1'], :critical => true},
+        'keyUsage' => {
+          :values => ['keyCertSign', 'cRLSign']},
+        'subjectKeyIdentifier' => {
+          :values => ['hash'], :critical => false, :invalid => false}}
       @certificate.sign(:serial => 1)
       @certificate.extensions.to_s.should == extensions.to_s
     end
 
     it do
-      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
       ZZZ::CA::Utils.should_receive(:x509_object)
                     .with(:certificate, @certificate_pem)
                     .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
+      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
       @certificate.certificate = @certificate_pem
       @certificate.verify(@certificate.public_key).should be_true
     end
@@ -420,21 +373,30 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 
     after do
       @certificate = nil
+      @ca_name = nil
+      @server_name = nil
+      @not_before = nil
+      @not_after = nil
+    end
+  end
+
+  context '証明書を PKCS#12 にする場合' do
+    it "#pkcs12(password) は OpenSSL::PKCS12 オブジェクトを返すこと" do
+      ZZZ::CA::Utils.stub!(:new)
+                    .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
+      ZZZ::CA::Utils.should_receive(:get_pkey_object)
+                    .with(@rsa_private_key_pem)
+                    .and_return(@rsa_private_key)
+      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
+      certificate.private_key = @rsa_private_key_pem
+      certificate.pkcs12('password').should be_an_instance_of OpenSSL::PKCS12
     end
   end
 
   after do
     @certificate_pem = nil
     @rsa_private_key_pem = nil
-    @not_before = nil
-    @not_after = nil
-  end
-
-  context '証明書を PKCS#12 にする場合' do
-    it do
-      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
-      certificate.private_key = @rsa_private_key_pem
-      certificate.pkcs12('password').class.should == OpenSSL::PKCS12
-    end
+    @dsa_private_key = nil
+    @rsa_private_key = nil
   end
 end

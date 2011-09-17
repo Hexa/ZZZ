@@ -13,8 +13,8 @@ module ZZZ
       end
 
       def method_missing(name, *args)
-        case name.to_s
-        when /^(last|next)_update=$/
+        case name
+        when :last_update=, :next_update=
           datetime = CA::Utils::encode_datetime(args[0])
           @x509.__send__(name, datetime)
         else
@@ -46,7 +46,8 @@ module ZZZ
         revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
         unless params[:reason].nil?
           reason = params[:reason]
-          revoked_reason = CA::Utils::encode_extensions('CRLReason' => {:values => [reason], :type => :enumerated})
+          revoked_reason = CA::Utils::encode_extensions(
+            'CRLReason' => {:values => [reason], :type => :enumerated})
           revoked.add_extension(revoked_reason)
         end
         revoked

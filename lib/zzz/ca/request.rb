@@ -15,8 +15,8 @@ module ZZZ
       end
 
       def method_missing(name, *args)
-        case name.to_s
-        when /^(private_key)|(pkey)$/
+        case name
+        when :private_key, :pkey
           @private_key
         else
           super
