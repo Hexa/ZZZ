@@ -4,34 +4,34 @@ CRL
 
 CRL を発行します．
 
-Methods
-=======
-
-class CRL
----------
+Public Class Methods
+====================
 
 ::new(pem = nil)
-^^^^^^^^^^^^^^^^
+----------------
 
 CRL オブジェクトを生成します．
 
 pem（CRL）が指定されている場合には，その CRL の CRL オブジェクトを生成します．
 
 
+Public Instance Methods
+=======================
+
 #last_update=(datetime)
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 この CRL の発行日時（last_update）を指定します．
 
 
 #next_update=(datetime)
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 次の CRL の発行日時（next_update）を指定します．
 
 
 #add_revoked(params)
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 失効させる証明書を指定します．
 
@@ -43,19 +43,19 @@ params には :serial と :datetime を指定します．
 
 
 #crl
-^^^^
+----
 
 CRL (OpenSSL::X509::CRL オブジェクト) を取得します．
 
 #crl=(pem_or_der)
-^^^^^^^^^^^^^^^^^
+-----------------
 
 発行済みの CRL から CRL オブジェクトを生成します．
 
 pem_or_der には PEM 形式，または，DER 形式の CRL を指定します．
 
 #sign(parrams)
-^^^^^^^^^^^^^^
+--------------
 
 CRL に署名します．
 

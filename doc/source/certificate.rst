@@ -4,46 +4,47 @@ Certificate
 
 証明書を発行します．
 
-Methods
-=======
 
-class Certificate
------------------
+Public Class Methods
+====================
 
 ::new(pem = nil)
-^^^^^^^^^^^^^^^^
+----------------
 
 Certificate オブジェクトを生成します．
 
 pem（証明書）が指定されている場合には，その証明書の Certificate オブジェクトを生成します．
 
 
+Public Instance Methods
+=======================
+
 #not_before=(datetime)
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 証明書が有効になる日時（not_before）を指定します．
 
 
 #not_before=(datetime)
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 証明書が無効になる日時（not_after）を指定します．
 
 
 #certificate
-^^^^^^^^^^^^
+------------
 
 証明書（OpenSSL::X509::Certificate オブジェクト）を取得します．
 
 #certificate=(pem_or_der)
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
 発行済みの証明書から Certificate オブジェクトを生成します．
 
 pem_or_der には PEM 形式，または，DER 形式の証明書を指定します．
 
 #private_key=(private_key)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 作成済みの秘密鍵を Certificate オブジェクトに指定します．
 
@@ -51,7 +52,7 @@ private_key には PEM または、OpenSSL::PKey オブジェクトを指定し�
 
 
 #private_key
-^^^^^^^^^^^^
+------------
 
 秘密鍵を取得します．
 
@@ -59,7 +60,7 @@ private_key には PEM または、OpenSSL::PKey オブジェクトを指定し�
 
 
 #sign(params)
-^^^^^^^^^^^^^
+-------------
 
 証明書に署名します．
 
