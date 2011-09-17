@@ -74,11 +74,10 @@ module ZZZ
         @extensions.each_pair do |key, elements|
           values = elements[:values]
           critical = elements[:critical] || false
-          extension = ''
           case key
-          when "authorityKeyIdentifier"
+          when 'authorityKeyIdentifier'
             @encoded_extensions << encode_authority_key_identifier(key, values, critical)
-          when "crlNumber"
+          when 'crlNumber'
             @encoded_extensions << encode_crl_number(key, values, critical)
           else
             type = elements[:type] || :default
@@ -133,7 +132,6 @@ module ZZZ
         values.each do |value|
           case value
           when /^keyid:true$/i
-            public_key =  get_public_key
             v = OpenSSL::Digest::SHA1.digest(public_key.to_der)
             key_id = OpenSSL::ASN1::ASN1Data.new(
               v,
@@ -147,7 +145,9 @@ module ZZZ
         OpenSSL::X509::Extension.new(key, encoded_values, critical)
       end
 
-      def get_public_key
+      ## 公開鍵の取得
+      def public_key
+        ## TODO: 書き直す
         certificate = @extension_factory.issuer_certificate || @extension_factory.subject_request || (raise ZZZ::CA::Error)
         certificate.public_key
       end
