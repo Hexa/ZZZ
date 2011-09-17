@@ -11,11 +11,6 @@ module ZZZ
         @subject = subject
       end
 
-      ## エンコード前の DN の取得
-      def show
-        @subject
-      end
-
       ## OID の追加
       def add(oid, value)
         @subject << {oid => value}

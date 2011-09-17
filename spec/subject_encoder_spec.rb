@@ -9,10 +9,6 @@ describe ZZZ::CA::SubjectEncoder do
       @subject_encoder = ZZZ::CA::SubjectEncoder.new
     end
 
-    it "#show は空の配列を返すこと" do
-      @subject_encoder.show.should == []
-    end
-
     it "#add(oid, value) は追加した {oid => value} の配列を返すこと" do
       @subject_encoder.add('C', 'JP')
       @subject_encoder.add('C', 'JP')
@@ -50,10 +46,6 @@ describe ZZZ::CA::SubjectEncoder do
     before do
       @name = [{'C' => 'JP'}, {'C' => 'JP'}, {'CN' => 'cn'},  {'CN' => 'cn'}]
       @subject_encoder = ZZZ::CA::SubjectEncoder.new(@name)
-    end
-
-    it "#show は .new の引数で指定した配列を返すこと" do
-      @subject_encoder.show.should == @name
     end
 
     it "#add(oid, value) は追加した {oid => value} の配列を返すこと" do
