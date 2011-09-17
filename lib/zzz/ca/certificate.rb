@@ -32,10 +32,10 @@ module ZZZ
       ## 秘密鍵の指定
       def private_key=(private_key)
         ## TODO: 書き直す
-        @private_key = if private_key.instance_of? String
+        @private_key = case private_key
+                       when String
                          CA::Utils::get_pkey_object(private_key)
-                       elsif private_key.instance_of? OpenSSL::PKey::RSA \
-                             or private_key.instance_of? OpenSSL::PKey::DSA
+                       when OpenSSL::PKey::RSA, OpenSSL::PKey::DSA
                          private_key
                        else
                          raise ZZZ::CA::Error
