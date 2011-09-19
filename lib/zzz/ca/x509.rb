@@ -104,51 +104,33 @@ module ZZZ
       end
 
       ## 証明書への署名
-      def sign(type, signer, params = {})
+      def sign(type, signer = self, params = {})
         case type
         when :certificate
-          data = params[:certificate] || self
-          data.version = params[:version]
-          serial = params[:serial]
-          certificate_sign(signer, data, serial)
+          self.version = params[:version]
+          self.serial = params[:serial]
+          self.issuer = signer.subject
+          _sign(type, signer, serial)
         when :request
-          signer.version = params[:version]
-          request_sign(signer)
+          self.version = params[:version]
+          _sign(type, signer)
         when :crl
-          data = params[:crl] || self
-          data.version = params[:version]
-          crl_sign(signer, data)
+          self.version = params[:version]
+          self.issuer = signer.subject
+          _sign(type, signer)
         else
           raise ZZZ::CA::Error
         end
       end
 
       private
-      def certificate_sign(signer, data, serial)
-        data.serial = serial
-        data.issuer = signer.subject
-        signature_algorithm = data.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM
-        data.certificate.sign(
-          signer.private_key,
-          OpenSSL::Digest.new(signature_algorithm))
-        data
-      end
-
-      def crl_sign(signer, data)
-        data.issuer = signer.subject
-        signature_algorithm = data.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM
-        data.crl.sign(
-          signer.private_key,
-          OpenSSL::Digest.new(signature_algorithm))
-        data
-      end
-
-      def request_sign(signer)
-        signature_algorithm = signer.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM
-        signer.request.sign(
-          signer.private_key,
-          OpenSSL::Digest.new(signature_algorithm))
-          signer
+      def _sign(type, signer, serial = nil)
+        eval("
+          self.#{type}.sign(
+            signer.private_key,
+            OpenSSL::Digest.new(
+               self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM))")
+        self
       end
     end
   end
