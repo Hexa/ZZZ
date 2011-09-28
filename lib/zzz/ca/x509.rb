@@ -42,6 +42,12 @@ module ZZZ
         end
       end
 
+      def add_subject(oid, value)
+        @subject ||= []
+        @subject << {oid => value}
+        self.subject = @subject
+      end
+
       ## 秘密鍵／公開鍵の生成
       def gen_private_key(params = {})
         @private_key = ZZZ::CA::Utils::gen_pkey(params)
