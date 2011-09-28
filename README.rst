@@ -34,6 +34,7 @@ REQUIREMENTS
 ============
 
 - ruby 1.9.2
+- OpenSSL 1.0.0
 
 
 SAMPLE
@@ -50,13 +51,11 @@ CSR の作成
 
   request = Request.new
   request.gen_private_key
-  subject = [
-    {'C' => 'JP'},
-    {'ST' => 'Tokyo'},
-    {'L' => 'Chuo'},
-    {'O' => 'O'},
-    {'CN' => 'Server'}]
-  request.subject = subject
+  request.add_subject('C', 'JP')
+  request.add_subject('ST', 'Tokyo')
+  request.add_subject('L', 'Chuo')
+  request.add_subject('O', 'O')
+  request.add_subject('CN', 'Server')
   request.sign
   puts request.to_text
 
@@ -74,16 +73,16 @@ CSR の作成
   certificate.gen_private_key
   certificate.not_before = '2010/09/21 00:00:00'
   certificate.not_after = '2010/10/21 00:00:00'
-  subject = [
-    {'C' => 'JP'},
-    {'ST' => 'Tokyo'},
-    {'L' => 'Chuo'},
-    {'O' => 'O'},
-    {'CN' => 'CA'}]
-  certificate.subject = subject
+  certificate.add_subject('C', 'JP')
+  certificate.add_subject('ST', 'Tokyo')
+  certificate.add_subject('L', 'Chuo')
+  certificate.add_subject('O', 'O')
+  certificate.add_subject('CN', 'CA')
   certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
   certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
-  certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
+  certificate.add_extension('extendedKeyUsage',
+                            ['TLS Web Server Authentication',
+                            'TLS Web Client Authentication'])
   certificate.sign(:serial => 1)
   puts certificate.to_text
 
@@ -98,27 +97,25 @@ CSR の作成
   ca.gen_private_key
   ca.not_before = '2010/09/21 00:00:00'
   ca.not_after = '2010/10/21 00:00:00'
-  subject = [
-    {'C' => 'JP'},
-    {'ST' => 'Tokyo'},
-    {'L' => 'Chuo'},
-    {'O' => 'O'},
-    {'CN' => 'CA'}]
-  ca.subject = subject
+  ca.add_subject('C', 'JP')
+  ca.add_subject('ST', 'Tokyo')
+  ca.add_subject('L', 'Chuo')
+  ca.add_subject('O', 'O')
+  ca.add_subject('CN', 'CA')
   ca.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
   ca.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
-  ca.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
+  ca.add_extension('extendedKeyUsage',
+                    ['TLS Web Server Authentication',
+                    'TLS Web Client Authentication'])
   ca.sign(:serial => 1)
 
   request = Request.new
   request.gen_private_key
-  subject = [
-    {'C' => 'JP'},
-    {'ST' => 'Tokyo'},
-    {'L' => 'Chuo'},
-    {'O' => 'O'},
-    {'CN' => 'Server'}]
-  request.subject = subject
+  request.add_subject('C', 'JP')
+  request.add_subject('ST', 'Tokyo')
+  request.add_subject('L', 'Chuo')
+  request.add_subject('O', 'O')
+  request.add_subject('CN', 'Server')
   request.sign
   puts request.to_text
 
@@ -133,7 +130,9 @@ CSR の作成
   certificate.add_extension('basicConstraints', ['CA:FALSE'])
   certificate.add_extension('authorityKeyIdentifier', ['keyid:true'])
   certificate.add_extension('subjectKeyIdentifier', ['hash'])
-  certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
+  certificate.add_extension('extendedKeyUsage',
+                            ['TLS Web Server Authentication',
+                              'TLS Web Client Authentication'])
   certificate.sign(:serial => 2, :signer => ca)
   puts certificate.to_text
 
@@ -151,26 +150,28 @@ CRL の作成
   certificate.gen_private_key
   certificate.not_before = '2010/09/21 00:00:00'
   certificate.not_after = '2010/10/21 00:00:00'
-  subject = [
-    {'C' => 'JP'},
-    {'ST' => 'Tokyo'},
-    {'L' => 'Chuo'},
-    {'O' => 'O'},
-    {'CN' => 'CA'}]
-  certificate.subject = subject
+  certificate.add_subject('C', 'JP')
+  certificate.add_subject('ST', 'Tokyo')
+  certificate.add_subject('L', 'Chuo')
+  certificate.add_subject('O', 'O')
+  certificate.add_subject('CN', 'CA')
   certificate.add_extension('basicConstraints', ['CA:TRUE', 'pathlen:0'], true)
   certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
   certificate.add_extension('crlDistributionPoints', ['URI:http://example.com/example.crl'])
-  certificate.add_extension('extendedKeyUsage', ['TLS Web Server Authentication', 'TLS Web Client Authentication'])
+  certificate.add_extension('extendedKeyUsage',
+                            ['TLS Web Server Authentication',
+                            'TLS Web Client Authentication'])
   certificate.sign(:serial => 1)
   certificate.to_text
 
   crl = CRL.new
   crl.last_update = '2010/09/21 00:00:00'
   crl.next_update = '2010/10/21 00:00:00'
-  crl.add_revoked(:serial => 1, :datetime => Time.now.to_s, :reason => 'superseded')
+  crl.add_revoked(:serial => 1, :datetime => Time.now.to_s,
+                                :reason => 'superseded')
   crl.add_revoked(:serial => 2, :datetime => Time.now.to_s)
-  crl.add_revoked(:serial => 3, :datetime => Time.now.to_s, :reason => 'cACompromise')
+  crl.add_revoked(:serial => 3, :datetime => Time.now.to_s,
+                                :reason => 'cACompromise')
 
   crl.sign(:signer => certificate)
   puts crl.to_text
