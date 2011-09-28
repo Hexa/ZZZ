@@ -113,12 +113,10 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       end
 
       e = (0x21..0x7e).to_a.map {|e| e.chr }
-      v = ''
-      rand(100).times {|i| v << e[rand(e.length)] }
-      @ca_name = l.call(@ca_subject = [{'CN' => v}])
-      v = ''
-      rand(100).times {|i| v << e[rand(e.length)] }
-      @server_name = l.call(@server_subject = [{'CN' => v}])
+      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      @ca_name = l.call(@ca_subject = [{'CN' => cn}])
+      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      @server_name = l.call(@server_subject = [{'CN' => cn}])
 
       ZZZ::CA::Utils.should_receive(:new)
                     .at_least(:once)
@@ -162,7 +160,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 
     it "#private_key=rsa_private_key （不正な PEM）を指定した場合は例外を発生させること" do
       ZZZ::CA::Utils.should_receive(:get_pkey_object)
-                    .and_raise(ZZZ::CA::Error.new)
+                    .and_raise(ZZZ::CA::Error)
       -> { @certificate.private_key = 'invalid' }.should raise_error ZZZ::CA::Error
     end
 
