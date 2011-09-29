@@ -35,17 +35,27 @@ module ZZZ
       def method_missing(name, *args)
         case name
         when :subject=, :issuer=
-          subject = ZZZ::CA::Utils::encode_subject(args[0])
-          @x509.__send__(name, subject)
+          ## TODO: 書き直し
+          if args[0].instance_of?(OpenSSL::X509::Name)
+            subject = ZZZ::CA::Utils::encode_subject(args[0])
+            @x509.__send__(name, subject)
+          else
+            args[0].each do |e|
+              e.each_pair do |oid, value|
+                add_subject(oid, value)
+              end
+            end
+          end
         else
           @x509.__send__(name, *args)
         end
       end
 
+      ## subject の指定
       def add_subject(oid, value)
         @subject ||= []
         @subject << {oid => value}
-        self.subject = @subject
+        @x509.subject = ZZZ::CA::Utils::encode_subject(@subject)
       end
 
       ## 秘密鍵／公開鍵の生成
