@@ -23,7 +23,8 @@ describe ZZZ::CA::X509 do
     it { ->{ @x509.sign(:invalid, '') }.should raise_error ZZZ::CA::Error }
 
     it do
-      ZZZ::CA::Utils.stub!(:encode_subject)
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@ca_subject)
                     .and_return(@ca_name)
       @ca_subject.each do |e|
         e.each_pair do |oid, value|
