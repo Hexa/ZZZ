@@ -199,11 +199,18 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@ca_subject)
+                    .and_return(@ca_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
-      @certificate.subject = @ca_subject
+      @ca_subject.each do |e|
+        e.each_pair do |oid, value|
+          @certificate.add_subject(oid, value)
+        end
+      end
       params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.gen_private_key(params)
       @certificate.sign(:serial => 1).should be_an_instance_of ZZZ::CA::Certificate
@@ -218,12 +225,19 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(Time.parse(@not_after))
       ZZZ::CA::Utils.stub!(:encode_subject)
                     .and_return(@ca_name)
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@ca_subject)
+                    .and_return(@ca_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
       params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
-      @certificate.subject = @ca_subject
+      @ca_subject.each do |e|
+        e.each_pair do |oid, value|
+          @certificate.add_subject(oid, value)
+        end
+      end
       @certificate.gen_private_key(params)
       @certificate.sign(:serial => 1, :version => 1)
       @certificate.version.should == 1
@@ -246,12 +260,14 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(@server_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
-      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .and_return(@ca_name)
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
-      @certificate.subject = @server_subject
+      @server_subject.each do |e|
+        e.each_pair do |oid, value|
+          @certificate.add_subject(oid, value)
+        end
+      end
+      params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.gen_private_key(params)
       @certificate.sign(:serial => 2, :signer => ca)
       @certificate.issuer.to_s.should == @ca_name.to_s
@@ -272,12 +288,19 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(Time.parse(@not_after))
       ZZZ::CA::Utils.stub!(:encode_subject)
                     .and_return(@ca_name)
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@ca_subject)
+                    .and_return(@ca_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
       params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
-      @certificate.subject = @ca_subject
+      @ca_subject.each do |e|
+        e.each_pair do |oid, value|
+          @certificate.add_subject(oid, value)
+        end
+      end
       @certificate.gen_private_key(params)
       @certificate.sign(:serial => 1, :version => 1)
       @certificate.signature_algorithm.should == 'dsaWithSHA1'
@@ -291,6 +314,9 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .with(@not_after)
                     .and_return(Time.parse(@not_after))
       ZZZ::CA::Utils.stub!(:encode_subject)
+                    .and_return(@ca_name)
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@ca_subject)
                     .and_return(@ca_name)
       request = OpenSSL::X509::Request.new(@request_pem)
       ZZZ::CA::Utils.stub!(:x509_object)
@@ -311,7 +337,11 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
-      @certificate.subject = @ca_subject
+      @ca_subject.each do |e|
+        e.each_pair do |oid, value|
+          @certificate.add_subject(oid, value)
+        end
+      end
       @certificate.subject_request = @request_pem
       @certificate.gen_private_key(params)
       @certificate.extensions = {

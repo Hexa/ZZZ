@@ -33,22 +33,7 @@ module ZZZ
       end
 
       def method_missing(name, *args)
-        case name
-        when :subject=, :issuer=
-          ## TODO: 書き直し
-          if args[0].instance_of?(OpenSSL::X509::Name)
-            subject = ZZZ::CA::Utils::encode_subject(args[0])
-            @x509.__send__(name, subject)
-          else
-            args[0].each do |e|
-              e.each_pair do |oid, value|
-                add_subject(oid, value)
-              end
-            end
-          end
-        else
-          @x509.__send__(name, *args)
-        end
+        @x509.__send__(name, *args)
       end
 
       ## subject の指定
@@ -141,11 +126,9 @@ module ZZZ
 
       private
       def _sign(type, signer, serial = nil)
-        eval("
-          self.#{type}.sign(
-            signer.private_key,
-            OpenSSL::Digest.new(
-               self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM))")
+        self.__send__(type).sign(signer.private_key,
+                                 OpenSSL::Digest.new(
+                                   self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM))
         self
       end
     end

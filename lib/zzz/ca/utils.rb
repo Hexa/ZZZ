@@ -73,8 +73,7 @@ module ZZZ
 
       ## DN のエンコード
       def self.encode_subject(subject)
-        encode = ->(subject) { ZZZ::CA::SubjectEncoder.new(subject).encode }
-        subject.instance_of?(OpenSSL::X509::Name) ? subject : encode.call(subject)
+        ZZZ::CA::SubjectEncoder.new(subject).encode
       end
 
       ## OpenSSL::Cipher オブジェクトの生成

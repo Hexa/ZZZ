@@ -56,7 +56,15 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
   context "インスタンスを生成した場合" do
     before do
       @request = ZZZ::CA::Request.new
-      @subject = [{'CN' => 'CA'}]
+      l = ->(subjects) do
+        name = OpenSSL::X509::Name.new
+        subjects.each {|e| e.each_pair {|key, value| name.add_entry(key, value) }}
+        name
+      end
+
+      e = (0x21..0x7e).to_a.map {|e| e.chr }
+      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      @name = l.call(@subject = [{'CN' => cn}])
     end
 
     it "#private_key=dsa_private_key （PEM）を指定した後の #private_key は OpenSSL::PKey::DSA オブジェクトを返すこと" do
@@ -81,7 +89,14 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with(params)
                     .and_return(@dsa_private_key)
-      @request.subject = @subject
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@subject)
+                    .and_return(@name)
+      @subject.each do |e|
+        e.each_pair do |oid, value|
+          @request.add_subject(oid, value)
+        end
+      end
       @request.gen_private_key(params)
       @request.sign.should be_an_instance_of ZZZ::CA::Request
     end
@@ -91,7 +106,14 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with(params)
                     .and_return(@dsa_private_key)
-      @request.subject = @subject
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@subject)
+                    .and_return(@name)
+      @subject.each do |e|
+        e.each_pair do |oid, value|
+          @request.add_subject(oid, value)
+        end
+      end
       @request.gen_private_key(params)
       @request.sign(:version => 0)
       @request.version.should == 0
@@ -107,7 +129,14 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with(params)
                     .and_return(@dsa_private_key)
-      @request.subject = @subject
+      ZZZ::CA::Utils.should_receive(:encode_subject)
+                    .with(@subject)
+                    .and_return(@name)
+      @subject.each do |e|
+        e.each_pair do |oid, value|
+          @request.add_subject(oid, value)
+        end
+      end
       @request.gen_private_key(params)
       @request.sign
       @request.signature_algorithm.should == 'dsaWithSHA1'
