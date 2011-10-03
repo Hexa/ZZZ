@@ -335,13 +335,19 @@ UPt704SNSQNfqQ==
 
     it "::excode_extensions(extensions, params) は配列で指定された extensions の Extension を OpenSSL::X509::Extension オブジェクトの配列を返すこと" do
       ZZZ::CA::Utils.encode_extensions(@extensions, @params).should be_an_instance_of Array
-      extensions = ZZZ::CA::Utils.encode_extensions(@extensions, @params)[0].should be_an_instance_of OpenSSL::X509::Extension
+      ZZZ::CA::Utils.encode_extensions(@extensions, @params)[0].should be_an_instance_of OpenSSL::X509::Extension
     end
 
     after do
       @certificate_pem = nil
       @extensions = nil
       @params = nil
+    end
+  end
+
+  context "Subject をエンコードする場合" do
+    it "::encode_subject([{'CN' => 'example.com'}]) は OpenSSL::X509::Name オブジェクトを返すこと" do
+      ZZZ::CA::Utils.encode_subject([{'CN' => 'example.com'}]).should be_an_instance_of OpenSSL::X509::Name
     end
   end
 end
