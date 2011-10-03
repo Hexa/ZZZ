@@ -108,27 +108,22 @@ module ZZZ
       def sign(type, signer = self, params = {})
         case type
         when :certificate
-          self.version = params[:version]
           self.serial = params[:serial]
           self.issuer = signer.subject
-          _sign(type, signer, serial)
         when :request
-          self.version = params[:version]
-          _sign(type, signer)
         when :crl
-          self.version = params[:version]
           self.issuer = signer.subject
-          _sign(type, signer)
         else
           raise ZZZ::CA::Error
         end
+        self.version = params[:version]
+        _sign(type, signer)
       end
 
       private
-      def _sign(type, signer, serial = nil)
-        self.__send__(type).sign(signer.private_key,
-                                 OpenSSL::Digest.new(
-                                   self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM))
+      def _sign(type, signer) # :nodoc:
+        digest = OpenSSL::Digest.new(self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM)
+        self.__send__(type).sign(signer.private_key, digest)
         self
       end
     end
