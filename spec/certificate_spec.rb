@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 require 'rspec'
-require 'openssl'
-require 'time'
-require 'zzz/ca/error'
 require 'zzz/ca/certificate'
 
 describe ZZZ::CA::Certificate do
