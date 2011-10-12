@@ -38,6 +38,15 @@ module ZZZ
         @x509.add_revoked(revoked)
       end
 
+      ## CRL への署名
+      def sign(params)
+        params[:data] = self
+        signer = params[:signer]
+        params[:version] ||= DEFAULT_VERSION
+        super(:crl, signer, params)
+      end
+
+      private
       def revoke(params)
         serial = params[:serial]
         revoked_time = params[:datetime]
@@ -51,14 +60,6 @@ module ZZZ
           revoked.add_extension(revoked_reason)
         end
         revoked
-      end
-
-      ## CRL への署名
-      def sign(params)
-        params[:data] = self
-        signer = params[:signer]
-        params[:version] ||= DEFAULT_VERSION
-        super(:crl, signer, params)
       end
     end
   end

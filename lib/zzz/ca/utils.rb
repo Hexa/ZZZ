@@ -82,26 +82,12 @@ module ZZZ
       end
 
       ## PEM 形式の秘密鍵からの OpenSSL::PKey オブジェクトの生成　
-      def self.get_pkey_object(private_key)
+      def self.pkey_object(private_key)
         case private_key
         when /^-----BEGIN RSA PRIVATE KEY-----/
           OpenSSL::PKey::RSA.new(private_key)
         when /^-----BEGIN DSA PRIVATE KEY-----/
           OpenSSL::PKey::DSA.new(private_key)
-        else
-          raise ZZZ::CA::Error
-        end
-      end
-
-      ## PEM からの証明書、CSR、CRL の判別
-      def self.asn1_type(pem)
-        case pem
-        when /^-----BEGIN CERTIFICATE-----.+-----END CERTIFICATE-----$/m
-          :certificate
-        when /^-----BEGIN CERTIFICATE REQUEST-----.+-----END CERTIFICATE REQUEST-----$/m
-          :request
-        when /^-----BEGIN X509 CRL-----.+-----END X509 CRL-----$/m
-          :crl
         else
           raise ZZZ::CA::Error
         end

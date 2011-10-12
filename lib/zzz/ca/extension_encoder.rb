@@ -90,13 +90,13 @@ module ZZZ
               when 'CRLReason'
                 @encoded_extensions = OpenSSL::X509::Extension.new(key, values[0])
               else
-                ## TODO: OpenSSL::X509::ExtensionFactory にすべきか
+                ## TODO: OpenSSL::X509::ExtensionFactory にすべきか検討する
                 values.each do |value|
                   @encoded_extensions << OpenSSL::X509::Extension.new(key, value, critical)
                 end
               end
             when :default
-              @encoded_extensions << @extension_factory.create_ext(get_oid(key), values.join(','), critical)
+              @encoded_extensions << @extension_factory.create_ext(oid(key), values.join(','), critical)
             else
               raise ZZZ::CA::Error
             end
@@ -116,7 +116,7 @@ module ZZZ
       end
 
       ## oid の取得
-      def get_oid(key)
+      def oid(key)
         OpenSSL::X509::Extension.new(key, 'temporary').oid
       end
 
