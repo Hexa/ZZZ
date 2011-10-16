@@ -34,7 +34,7 @@ module ZZZ
         ## TODO: 書き直す
         @private_key = case private_key
                        when String
-                         CA::Utils::get_pkey_object(private_key)
+                         CA::Utils::pkey_object(private_key)
                        when OpenSSL::PKey::RSA, OpenSSL::PKey::DSA
                          private_key
                        else

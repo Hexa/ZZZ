@@ -27,7 +27,7 @@ module ZZZ
       def private_key=(private_key)
         @private_key = case "#{private_key.class}"
                        when 'String'
-                         CA::Utils::get_pkey_object(private_key)
+                         CA::Utils::pkey_object(private_key)
                        when 'OpenSSL::PKey::RSA', 'OpenSSL::PKey::DSA'
                          private_key
                        else
