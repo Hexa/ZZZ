@@ -68,7 +68,7 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
     end
 
     it "#private_key=dsa_private_key （PEM）を指定した後の #private_key は OpenSSL::PKey::DSA オブジェクトを返すこと" do
-      ZZZ::CA::Utils.should_receive(:get_pkey_object)
+      ZZZ::CA::Utils.should_receive(:pkey_object)
                     .with(@dsa_private_key_pem)
                     .and_return(@dsa_private_key)
       @request.private_key = @dsa_private_key_pem

@@ -139,7 +139,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#private_key=rsa_private_key （PEM）を指定した後の #private_key は OpenSSL::PKey::RSA オブジェクトを返すこと" do
-      ZZZ::CA::Utils.should_receive(:get_pkey_object)
+      ZZZ::CA::Utils.should_receive(:pkey_object)
                     .with(@rsa_private_key_pem)
                     .and_return(@rsa_private_key)
       @certificate.private_key = @rsa_private_key_pem
@@ -156,13 +156,13 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#private_key=rsa_private_key （不正な PEM）を指定した場合は例外を発生させること" do
-      ZZZ::CA::Utils.should_receive(:get_pkey_object)
+      ZZZ::CA::Utils.should_receive(:pkey_object)
                     .and_raise(ZZZ::CA::Error)
       -> { @certificate.private_key = 'invalid' }.should raise_error ZZZ::CA::Error
     end
 
     it "#encrypted_private_key は暗号化した Private Key を返すこと" do
-      ZZZ::CA::Utils.stub!(:get_pkey_object)
+      ZZZ::CA::Utils.stub!(:pkey_object)
                     .and_return(OpenSSL::PKey::RSA.new(@rsa_private_key_pem))
       ZZZ::CA::Utils.should_receive(:cipher)
                     .with('AES-256-CBC')
@@ -409,7 +409,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     it "#pkcs12(password) は OpenSSL::PKCS12 オブジェクトを返すこと" do
       ZZZ::CA::Utils.stub!(:new)
                     .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
-      ZZZ::CA::Utils.should_receive(:get_pkey_object)
+      ZZZ::CA::Utils.should_receive(:pkey_object)
                     .with(@rsa_private_key_pem)
                     .and_return(@rsa_private_key)
       certificate = ZZZ::CA::Certificate.new(@certificate_pem)
