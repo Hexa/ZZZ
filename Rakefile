@@ -10,7 +10,7 @@ DESCRIPTION = <<-EOF
 ZZZ is a certificate and crl issue library for the ssl application.
 EOF
 MAIL = "hexa.diary@gmail.com"
-LIBS = ["lib"]
+LIB = "lib"
 LICENSE = "New BSD License"
 
 task :files do
@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
   s.summary = %q{#{SUMMARY}}
   s.version = %q{#{PKG_VERSION}}
   s.homepage = %q{#{HOMEPAGE}}
-  s.require_path = #{LIBS.inspect}
+  s.require_path = "#{LIB}"
   s.authors = #{AUTHORS.inspect}
   s.email = %q{#{MAIL}}
   s.files = #{PKG_FILES.inspect}
@@ -52,6 +52,7 @@ Gem::Specification.new do |s|
   s.rdoc_options << "--charset=UTF-8"
   s.extra_rdoc_files = #{RDOC_FILES.inspect}
   s.add_development_dependency('rspec')
+  s.add_development_dependency('simplecov')
   s.required_ruby_version = ">= #{RUBY_VERSION}"
   s.license = "#{LICENSE}"
 end
@@ -79,7 +80,8 @@ task :uninstall do
   sh "gem uninstall #{APP_NAME}"
 end
 
-require 'rake/rdoctask'
+#require 'rake/rdoctask'
+require 'rdoc/task'
 Rake::RDocTask.new(:rdoc) do |rd|
   rd.main = "README.rdoc"
   rd.rdoc_files.include("README*", "lib/**/*.rb")
