@@ -3,10 +3,11 @@
 module ZZZ; module CA; end; end
 
 
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "utils")
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "x509")
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "certificate")
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "request")
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "crl")
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "subject_encoder")
-require File.join(File.expand_path(File.dirname(__FILE__)), "ca", "extension_encoder")
+require "zzz/ca/utils"
+require "zzz/ca/x509"
+require "zzz/ca/certificate"
+require "zzz/ca/request"
+require "zzz/ca/crl"
+require "zzz/ca/subject_encoder"
+require "zzz/ca/extension_encoder"
+require "zzz/ca/error"

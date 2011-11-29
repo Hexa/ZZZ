@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require File.join(File.expand_path(File.dirname(__FILE__), 'x509'))
+require 'zzz/ca/x509'
 
 module ZZZ
   module CA

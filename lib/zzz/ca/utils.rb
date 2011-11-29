@@ -2,9 +2,9 @@
 
 require 'openssl'
 require 'time'
-require File.join(File.expand_path(File.dirname(__FILE__)), 'subject_encoder')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'extension_encoder')
-require File.join(File.expand_path(File.dirname(__FILE__)), 'error')
+require 'zzz/ca/subject_encoder'
+require 'zzz/ca/extension_encoder'
+require 'zzz/ca/error'
 
 module ZZZ
   module CA
