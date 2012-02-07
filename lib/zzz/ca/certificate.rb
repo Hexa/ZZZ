@@ -11,6 +11,19 @@ module ZZZ
       ## デフォルトの証明書のバージョン（X509v3）
       DEFAULT_VERSION = VERSIONS[:X509v3]
 
+      class << self
+        ## ZZZ::CA::Request から ZZZ::CA::Certificate への移行
+        def set_request(signed_request)
+          certificate = Certificate.new
+          certificate.private_key = signed_request.private_key
+          certificate.public_key = signed_request.public_key
+          certificate.subject = signed_request.subject
+          certificate.subject_request = signed_request.to_pem
+          ## TODO: Attribute を Extension へ
+          certificate
+        end
+      end
+
       def initialize(pem = nil)
         super(:certificate, pem)
       end
@@ -64,6 +77,14 @@ module ZZZ
       ## PKCS#12 形式の証明書を取得
       def pkcs12(passphrase, name = '')
         OpenSSL::PKCS12.create(passphrase, name, @private_key, @x509)
+      end
+
+      class << self
+        ## PKCS#12 形式の証明書に変換
+        ## TODO: certificate は必須？
+        def pkcs12(private_key, certificate, passphrase, name = '')
+          OpenSSL::PKCS12.create(passphrase, name, private_key, certificate)
+        end
       end
     end
   end

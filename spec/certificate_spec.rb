@@ -123,6 +123,19 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @not_after = '2011-09-30 00:00:00 +0900'
     end
 
+    it ".set_request(signed_request) は ZZZ::CA::Certificate オブジェクトを返すこと" do
+      signed_request = double('signed_request')
+      signed_request.should_receive(:private_key)
+                    .and_return(@rsa_private_key)
+      signed_request.should_receive(:public_key)
+                    .and_return(@rsa_private_key.public_key)
+      signed_request.should_receive(:subject)
+                    .and_return(@server_name)
+      signed_request.should_receive(:to_pem)
+                    .and_return(@request_pem)
+      ZZZ::CA::Certificate.set_request(signed_request).should be_instance_of ZZZ::CA::Certificate
+    end
+
     it "#gen_private_key は RAS Private Key を返すこと" do
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with({})
@@ -405,7 +418,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
   end
 
-  context '証明書を PKCS#12 にする場合' do
+  context '証明書を PKCS#12 で取得する場合' do
     it "#pkcs12(password) は OpenSSL::PKCS12 オブジェクトを返すこと" do
       ZZZ::CA::Utils.stub!(:new)
                     .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
@@ -415,6 +428,24 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       certificate = ZZZ::CA::Certificate.new(@certificate_pem)
       certificate.private_key = @rsa_private_key_pem
       certificate.pkcs12('password').should be_an_instance_of OpenSSL::PKCS12
+    end
+  end
+
+  context '証明書を PKCS#12 に変換する場合' do
+    before do
+      @passphrase = 'passphrase'
+      @certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
+    end
+
+    it do
+      ZZZ::CA::Certificate.pkcs12(@rsa_private_key, @certificate, @passphrase).should be_instance_of OpenSSL::PKCS12
+    end
+
+    after do
+      @passphrase = nil
+      @certificate =  nil
+      @rsa_private_key = nil
     end
   end
 
