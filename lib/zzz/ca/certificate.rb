@@ -22,6 +22,21 @@ module ZZZ
           ## TODO: Attribute を Extension へ
           certificate
         end
+
+        ## PKCS#12 形式の証明書に変換
+        def pkcs12(passphrase, certificate, private_key = nil, name = '')
+          case certificate
+          when OpenSSL::X509::Certificate
+            raise OpenSSL::PKCS12::PKCS12Error if private_key.nil?
+            OpenSSL::PKCS12.create(passphrase, name, private_key, certificate)
+          when ZZZ::CA::Certificate
+            private_key ||= certificate.private_key
+            raise ZZZ::CA::Error if private_key.nil?
+            OpenSSL::PKCS12.create(passphrase, name, private_key, certificate.certificate)
+          else
+            raise ZZZ::CA::Error
+          end
+        end
       end
 
       def initialize(pem = nil)
@@ -77,14 +92,6 @@ module ZZZ
       ## PKCS#12 形式の証明書を取得
       def pkcs12(passphrase, name = '')
         OpenSSL::PKCS12.create(passphrase, name, @private_key, @x509)
-      end
-
-      class << self
-        ## PKCS#12 形式の証明書に変換
-        ## TODO: certificate は必須？
-        def pkcs12(private_key, certificate, passphrase, name = '')
-          OpenSSL::PKCS12.create(passphrase, name, private_key, certificate)
-        end
       end
     end
   end

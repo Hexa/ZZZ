@@ -383,7 +383,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.certificate.should be_an_instance_of OpenSSL::X509::Certificate
     end
 
-    it '#certificate = crl_der は例外を発生させること' do
+    it "#certificate = crl_der は例外を発生させること" do
       crl = OpenSSL::X509::CRL.new(@crl_pem)
       ZZZ::CA::Utils.should_receive(:x509_object)
                     .with(:certificate, crl.to_der)
@@ -391,7 +391,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       -> { @certificate.certificate = crl.to_der }.should raise_error OpenSSL::X509::CertificateError 
     end
 
-    it '#issuer_certificate は #issuer_certificate = pem で指定した PEM 形式の証明書を返すこと' do
+    it "#issuer_certificate は #issuer_certificate = pem で指定した PEM 形式の証明書を返すこと" do
       ZZZ::CA::Utils.should_receive(:x509_object)
                     .with(:certificate, @certificate_pem)
                     .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
@@ -400,7 +400,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.issuer_certificate.to_pem.should == @certificate_pem
     end
 
-    it '#subject_request は #subject_request = pem で指定した PEM 形式の CSR を返すこと' do
+    it "#subject_request は #subject_request = pem で指定した PEM 形式の CSR を返すこと" do
       ZZZ::CA::Utils.should_receive(:x509_object)
                     .with(:request, @request_pem)
                     .and_return(OpenSSL::X509::Request.new(@request_pem))
@@ -418,7 +418,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
   end
 
-  context '証明書を PKCS#12 で取得する場合' do
+  context "証明書を PKCS#12 で取得する場合" do
     it "#pkcs12(password) は OpenSSL::PKCS12 オブジェクトを返すこと" do
       ZZZ::CA::Utils.stub!(:new)
                     .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
@@ -431,21 +431,44 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
   end
 
-  context '証明書を PKCS#12 に変換する場合' do
+  context "証明書を PKCS#12 に変換する場合" do
     before do
       @passphrase = 'passphrase'
-      @certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
-      @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
     end
 
-    it do
-      ZZZ::CA::Certificate.pkcs12(@rsa_private_key, @certificate, @passphrase).should be_instance_of OpenSSL::PKCS12
+    it "::pkcs12(passphrase, certificate, private_key) は OpenSSL::PKCS12 を返すこと" do
+      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      ZZZ::CA::Certificate.pkcs12(@passphrase, certificate, @rsa_private_key).should be_instance_of OpenSSL::PKCS12
+    end
+
+    it "::pkcs12(passphrase, certificate) は OpenSSL::PKCS12::PKCS12Error を返すこと" do
+      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
+      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, certificate) }.should raise_error OpenSSL::PKCS12::PKCS12Error
+    end
+
+    it "::pkcs12(passphrase, certificate, private_key) は OpenSSL::PKCS12 を返すこと" do
+      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
+      ZZZ::CA::Certificate.pkcs12(@passphrase, certificate, @rsa_private_key).should be_instance_of OpenSSL::PKCS12
+    end
+
+    it "::pkcs12(passphrase, certificate) は OpenSSL::PKCS12 を返すこと" do
+      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
+      certificate.private_key = @rsa_private_key
+      ZZZ::CA::Certificate.pkcs12(@passphrase, certificate).should be_instance_of OpenSSL::PKCS12
+    end
+
+    it "::pkcs12(passphrase, certificate) は ZZZ::CA::Error を返すこと" do
+      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
+      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, certificate) }.should raise_error ZZZ::CA::Error
+    end
+
+    it "::pkcs12(passphrase, 'string') は ZZZ::CA::Error を返すこと" do
+      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, 'string') }.should raise_error ZZZ::CA::Error
     end
 
     after do
       @passphrase = nil
-      @certificate =  nil
-      @rsa_private_key = nil
     end
   end
 
