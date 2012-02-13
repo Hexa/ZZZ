@@ -16,5 +16,5 @@ certificate.sign(:serial => 1)
 File.open('ca.pem', 'wb') do |file|
   file.puts certificate.to_text
   file.puts certificate.to_pem
-  file.puts mertificate.private_key.to_pem
+  file.puts certificate.private_key.to_pem
 end
