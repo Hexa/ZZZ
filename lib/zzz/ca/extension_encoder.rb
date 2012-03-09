@@ -128,28 +128,7 @@ module ZZZ
 
       ## authorityKeyIdentifier を ASN.1 形式にエンコード
       def encode_authority_key_identifier(key, values, critical)
-        encoded_values = ''
-        values.each do |value|
-          case value
-          when /^keyid:true$/i
-            v = OpenSSL::Digest::SHA1.digest(public_key.to_der)
-            key_id = OpenSSL::ASN1::ASN1Data.new(
-              v,
-              OpenSSL::ASN1::EOC,
-              :CONTEXT_SPECIFIC).to_der
-              encoded_values = OpenSSL::ASN1::Sequence([key_id]).to_der
-          else
-            encoded_values = value
-          end
-        end
-        OpenSSL::X509::Extension.new(key, encoded_values, critical)
-      end
-
-      ## 公開鍵の取得
-      def public_key
-        ## TODO: 書き直す
-        certificate = @extension_factory.issuer_certificate || @extension_factory.subject_request || (raise ZZZ::CA::Error)
-        certificate.public_key
+        @extension_factory.create_ext(key, values.join(','), critical)
       end
     end
   end

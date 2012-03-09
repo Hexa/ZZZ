@@ -137,7 +137,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.subject_certificate = @certificate_pem
       @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
       @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
-      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'], :critical => false)
+      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'], :critical => false)
       @extension_encoder.add(:oid => 'subjectKeyIdentifier', :values => ['hash'])
       @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
         'TLS Web Server Authentication',
@@ -206,25 +206,25 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は OpenSSL::X509::Extension の配列を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
-      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'])
+      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'])
       @extension_encoder.encode[0].should be_an_instance_of OpenSSL::X509::Extension
     end
 
-    it '#issuer_certificate= で証明書を指定した後の keyid:true 以外を指定した authorityKeyIdentifier を含んだ Extensions の #encode は OpenSSL::X509::Extension の配列を返すこと' do
+    it '#issuer_certificate= で証明書を指定した後の keyid 以外を指定した authorityKeyIdentifier を含んだ Extensions の #encode は OpenSSL::X509::ExtensionError Exception を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['key:id'])
-      @extension_encoder.encode[0].should be_an_instance_of OpenSSL::X509::Extension
+      -> { @extension_encoder.encode }.should raise_error( OpenSSL::X509::ExtensionError )
     end
 
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は authorityKeyIdentifier を含んだ配列を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
-      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'])
+      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'])
       @extension_encoder.encode[0].oid.should  == 'authorityKeyIdentifier'
     end
 
-    it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid:true が追加された #encode は ZZZ::CA::Error Exception を返すこと' do
-      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid:true'])
-      -> { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
+    it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid が追加された #encode は OpenSSL::X509::ExtensionError Exception を返すこと' do
+      @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'])
+      -> { @extension_encoder.encode }.should raise_error( OpenSSL::X509::ExtensionError )
     end
 
     after do
