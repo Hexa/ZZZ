@@ -13,14 +13,59 @@ module ZZZ
 
       class << self
         ## ZZZ::CA::Request から ZZZ::CA::Certificate への移行
-        def set_request(signed_request)
+        def set_request(request)
           certificate = Certificate.new
-          certificate.private_key = signed_request.private_key
-          certificate.public_key = signed_request.public_key
-          certificate.subject = signed_request.subject
-          certificate.subject_request = signed_request.to_pem
-          ## TODO: Attribute を Extension へ
+          certificate.private_key = request.private_key
+          certificate.public_key = request.public_key
+          certificate.subject = request.subject
+          certificate.subject_request = request.to_pem
+          extensions = find_extensions(request)
+          certificate.extensions = extensions unless extensions.empty?
           certificate
+        end
+
+        ## require 'openssl'
+        ## 
+        ## request = OpenSSL::X509::Request.new
+        ## factory = OpenSSL::X509::ExtensionFactory.new
+        ## exts = [
+        ##   factory.create_ext("subjectAltName", "DNS:foo.example.com"),
+        ##   factory.create_ext("subjectAltName", "DNS:bar.example.com")
+        ## ]
+        ## asn1exts = OpenSSL::ASN1::Set([OpenSSL::ASN1::Sequence(exts)])
+        ## request.add_attribute(OpenSSL::X509::Attribute.new('extReq', asn1exts))
+        ## attribute = ''
+        ## request.attributes.each do |_attribute|
+        ##   attribute = _attribute if _attribute.oid == 'extReq'
+        ## end
+        ## 
+        ## certificate = OpenSSL::X509::Certificate.new
+        ## extensions = []
+        ## attribute.value.value[0].each do |e|
+        ##   extensions << OpenSSL::X509::Extension.new(e.to_der)
+        ## end
+        ## certificate.extensions = extensions
+        def find_extensions(request)
+          extension_request = find_ext_request(request)
+          extension_request.map do |extension|
+            extensions = {}
+            e = OpenSSL::X509::Extension.new(extension.to_der)
+            oid = e.oid
+            extensions[oid] ||= {}
+            extensions[oid][:values] ||= []
+            extensions[oid][:values] << e.value
+            extensions
+          end
+        end
+
+        def find_ext_request(request)
+          attributes =  request.attributes
+          attribute = attributes.find do |attribute|
+            attribute if attribute.oid == 'extReq'
+          end
+
+          return [] unless attribute
+          attribute.value.value[0]
         end
 
         ## PKCS#12 形式の証明書に変換

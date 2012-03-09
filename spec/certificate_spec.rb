@@ -81,6 +81,90 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     @rsa_private_key = OpenSSL::PKey::RSA.new(@rsa_private_key_pem)
   end
 
+  context "" do
+    before do
+      l = ->(subjects) do
+        name = OpenSSL::X509::Name.new
+        subjects.each {|e| e.each_pair {|key, value| name.add_entry(key, value) }}
+        name
+      end
+      e = (0x21..0x7e).to_a.map {|e| e.chr }
+      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      @server_name = l.call([{'CN' => cn}])
+
+      ## "subjectAltName", "DNS:foo.example.com"
+      ## "subjectAltName", "DNS:bar.example.com"
+      @subject_alt_name1 = ["301a0603551d1104133011820f666f6f2e6578616d706c652e636f6d"].pack('H*')
+      @subject_alt_name2 = ["301a0603551d1104133011820f6261722e6578616d706c652e636f6d"].pack('H*')
+      @request = double('request')
+    end
+
+    it "::find_ext_request(request) は OpenSSL::ASN1 オブジェクトの配列を返すこと" do
+      attribute1 = double('attribute1')
+      attribute1.should_receive(:oid)
+                .exactly(3).times
+                .and_return(nil)
+      attribute2 = double('attribute2')
+      attribute2.should_receive(:oid)
+                .exactly(3).times
+                .and_return('extReq')
+      attribute2.should_receive(:nil?)
+                .and_return(false)
+      @request.should_receive(:attributes)
+              .exactly(3).times
+              .and_return([attribute1, attribute2])
+      values = double('values')
+      values.should_receive(:value)
+            .exactly(3).times
+            .and_return([[
+                        OpenSSL::ASN1.decode(@subject_alt_name1),
+                        OpenSSL::ASN1.decode(@subject_alt_name2)]])
+      attribute2.should_receive(:value)
+                .exactly(3).times
+                .and_return(values)
+      ZZZ::CA::Certificate.find_ext_request(@request).should be_instance_of Array
+      ZZZ::CA::Certificate.find_ext_request(@request)[0].should be_instance_of OpenSSL::ASN1::Sequence
+      ZZZ::CA::Certificate.find_ext_request(@request)[1].should be_instance_of OpenSSL::ASN1::Sequence
+    end
+
+    it "::set_extensions(certificate, request) は OpenSSL::X509::Extension オブジェクトの配列を返すこと" do
+      extension1 = double('extension1')
+      extension1.should_receive(:to_der)
+                .and_return(@subject_alt_name1)
+      extension2 = double('extension2')
+      extension2.should_receive(:to_der)
+                .and_return(@subject_alt_name2)
+      ZZZ::CA::Certificate.should_receive(:find_ext_request)
+                          .with(@request)
+                          .and_return([extension1, extension2])
+      ZZZ::CA::Certificate.find_extensions(@request).should be_instance_of Array
+    end
+
+    it "::set_request(signed_request) は ZZZ::CA::Certificate オブジェクトを返すこと" do
+      @request.should_receive(:private_key)
+                    .and_return(@rsa_private_key)
+      @request.should_receive(:public_key)
+                    .and_return(@rsa_private_key.public_key)
+      @request.should_receive(:subject)
+                    .and_return(@server_name)
+      @request.should_receive(:to_pem)
+                    .and_return(@request_pem)
+      extensions = {
+        "subjectAltName" => {
+          :values => ["DNS:foo.example.com", "DNS:bar.example.com"]}}
+      ZZZ::CA::Certificate.should_receive(:find_extensions)
+                          .with(@request)
+                          .and_return(extensions)
+      ZZZ::CA::Certificate.set_request(@request).should be_instance_of ZZZ::CA::Certificate
+    end
+
+    after do
+      @request = nil
+      @server_name = nil
+      @signed_request = nil
+    end
+  end
+
   context "インスタンスを生成する場合" do
     before do
       module ZZZ; module CA; class Utils; end; end; end
@@ -121,19 +205,6 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate = ZZZ::CA::Certificate.new
       @not_before = '2011-09-01 00:00:00 +0900'
       @not_after = '2011-09-30 00:00:00 +0900'
-    end
-
-    it ".set_request(signed_request) は ZZZ::CA::Certificate オブジェクトを返すこと" do
-      signed_request = double('signed_request')
-      signed_request.should_receive(:private_key)
-                    .and_return(@rsa_private_key)
-      signed_request.should_receive(:public_key)
-                    .and_return(@rsa_private_key.public_key)
-      signed_request.should_receive(:subject)
-                    .and_return(@server_name)
-      signed_request.should_receive(:to_pem)
-                    .and_return(@request_pem)
-      ZZZ::CA::Certificate.set_request(signed_request).should be_instance_of ZZZ::CA::Certificate
     end
 
     it "#gen_private_key は RAS Private Key を返すこと" do

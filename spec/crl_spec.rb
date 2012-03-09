@@ -42,7 +42,6 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 
   context "インスタンスを生成した場合" do
     before do
-      module ZZZ; module CA; class Utils; end; end; end
       @crl = ZZZ::CA::CRL.new
       @last_update = '2010/09/21 00:00:00'
       @next_update = '2010/09/21 00:00:00'
