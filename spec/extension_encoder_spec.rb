@@ -37,20 +37,30 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 -----END CERTIFICATE REQUEST-----
       Request
       @extension_encoder = ZZZ::CA::ExtensionEncoder.new
-    end
 
-    it '#show は追加されている oid, values を返すこと' do
-      extensions = {
+      @extensions = {
         'basicConstraints' => {
-          :values => ['CA:TRUE', 'pathlen:0'], :critical => true},
+          :values => ['CA:TRUE', 'pathlen:0'], :critical => false},
         'keyUsage' => {
-          :values => ['keyCertSign', 'cRLSign']},
+          :values => ['keyCertSign', 'cRLSign'], :critical => false},
+        'crlNumber' => {
+          :values => [1]},
         'extendedKeyUsage' => {
           :values => [
             'TLS Web Server Authentication',
-            'TLS Web Client Authentication']}}
-      extension_encoder = ZZZ::CA::ExtensionEncoder.new(extensions)
-      extension_encoder.show.should == extensions
+            'TLS Web Client Authentication'], :critical => false}}
+      @extensions.each do |oid, e|
+        if e[:critical].nil?
+          @extension_encoder.add(:oid => oid, :values => e[:values])
+        else
+          @extension_encoder.add(:oid => oid, :values => e[:values], :critical => e[:critical])
+        end
+      end
+    end
+
+    it '#show は追加されている oid, values を返すこと' do
+      extension_encoder = ZZZ::CA::ExtensionEncoder.new(@extensions)
+      extension_encoder.show.should == @extensions
     end
 
     it '#show は追加されている oid (番号で指定する), values を返すこと' do
@@ -64,67 +74,34 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     end
 
     it '#show は追加されている oid, values を返すこと' do
-      extensions = {
-        'basicConstraints' => {
-          :values => ['CA:TRUE', 'pathlen:0'], :critical => true},
-        'keyUsage' => {
-          :values => ['keyCertSign', 'cRLSign'], :critical => false},
-        'extendedKeyUsage' => {
-          :values => [
-            'TLS Web Server Authentication',
-            'TLS Web Client Authentication'], :critical => false}}
-      @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
-      @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
-      @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication'])
-      @extension_encoder.show.should == extensions
+      @extensions['crlNumber'][:critical] = false
+      @extension_encoder.show.should == @extensions
     end
 
     it '#add は oid, value を追加すること' do
       extensions = {
         'basicConstraints' => {
           :values => ['CA:TRUE', 'pathlen:0'], :critical => false},
-        'keyUsage' => {
-          :values => ['keyCertSign', 'cRLSign'], :critical => false},
         'extendedKeyUsage' => {
-          :values => [
-            'TLS Web Server Authentication',
-            'TLS Web Client Authentication'], :critical => false}}
-      @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => false)
-      @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'], :critical => false)
-      @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication'])
-      @extension_encoder.show.should == extensions
+          :values => ['TLS Web Server Authentication'], :critical => false}}
+      extension_encoder = ZZZ::CA::ExtensionEncoder.new
+      extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => false)
+      extension_encoder.add(:oid => 'extendedKeyUsage', :values => ['TLS Web Server Authentication'])
+      extension_encoder.show.should == extensions
     end
 
     it '#delete は該当する oid を削除すること' do
       extensions = {
         'basicConstraints' => {
-          :values => ['CA:TRUE', 'pathlen:0'], :critical => true}}
-      @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
-      @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
-      @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication'])
+          :values => ['CA:TRUE', 'pathlen:0'], :critical => false}}
       @extension_encoder.delete('keyUsage')
       @extension_encoder.delete('extendedKeyUsage')
+      @extension_encoder.delete('crlNumber')
       @extension_encoder.show.should == extensions
     end
 
-    it '#encode は add で追加した数の X509::Extension オブジェクトの配列を返すこと' do
-      @extension_encoder.add(:oid => 'crlNumber', :values => [1])
-      @extension_encoder.encode.should have(1).items
-    end
-
-    it '#encode は add で追加した数の X509::Extension オブジェクトの配列を返すこと' do
-      @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'])
-      @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
-      @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication'])
-      @extension_encoder.encode.should have(3).items
+    it '#encode は add で追加した数の OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
+      @extension_encoder.encode.should have(4).items
     end
 
     it 'oid が CRLReson の場合に add で Extension を追加した後の #encode は 1 つの X509::Extension オブジェクトを返すこと' do
@@ -135,30 +112,29 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     it '#encode は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.subject_certificate = @certificate_pem
-      @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
-      @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'], :critical => false)
       @extension_encoder.add(:oid => 'subjectKeyIdentifier', :values => ['hash'])
-      @extension_encoder.add(:oid => 'extendedKeyUsage', :values => [
-        'TLS Web Server Authentication',
-        'TLS Web Client Authentication'])
       @extension_encoder.encode.should be_an_instance_of Array
+      @extension_encoder.encode[0].should be_an_instance_of OpenSSL::X509::Extension
+      @extension_encoder.encode.find {|extension| extension.oid == "authorityKeyIdentifier"}.oid.should == "authorityKeyIdentifier"
+      @extension_encoder.encode.find {|extension| extension.oid == "authorityKeyIdentifier"}.value.should == "keyid:07:50:4B:B0:24:B8:94:9D:EE:D3:1C:D7:BB:B7:A1:89:55:BC:38:C4\n"
     end
 
     it '#encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.1', :values => ['01001001'], :type => :bit_string)
-      @extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => true)
-      @extension_encoder.add(:oid => 'keyUsage', :values => ['keyCertSign', 'cRLSign'])
       @extension_encoder.add(:oid => '2.5.29.37', :values => ['01101100'], :type => :bit_string)
       @extension_encoder.encode
       @extension_encoder.encoded_extensions[rand(4)].should be_an_instance_of OpenSSL::X509::Extension
+      @extension_encoder.encode.find {|extension| extension.oid == "basicConstraints"}.oid.should == "basicConstraints"
+      @extension_encoder.encode.find {|extension| extension.oid == "basicConstraints"}.value.should == "CA:TRUE, pathlen:0"
     end
 
     it '#encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
       @extension_encoder.add(:oid => '2.5.29.19', :values => ['CA:TRUE'])
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.1', :values => ['server', 'client'])
       @extension_encoder.encode
-      @extension_encoder.encoded_extensions[rand(2)].should be_an_instance_of OpenSSL::X509::Extension
+      @extension_encoder.encoded_extensions[0].should be_an_instance_of OpenSSL::X509::Extension
+      @extension_encoder.encoded_extensions[1].should be_an_instance_of OpenSSL::X509::Extension
     end
 
     it '#add で不正な ASN.1 型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
@@ -219,7 +195,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は authorityKeyIdentifier を含んだ配列を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'])
-      @extension_encoder.encode[0].oid.should  == 'authorityKeyIdentifier'
+      @extension_encoder.encode.find {|extension| extension.oid == 'authorityKeyIdentifier'}.oid.should  == 'authorityKeyIdentifier'
     end
 
     it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid が追加された #encode は OpenSSL::X509::ExtensionError Exception を返すこと' do
