@@ -78,6 +78,14 @@ module ZZZ
         @certificates[:issuer_certificate]
       end
 
+      def subject_certificate=(certificate)
+        @certificates[:subject_certificate] = ZZZ::CA::Utils::x509_object(:certificate, certificate)
+      end
+
+      def subject_certificate
+        @certificates[:subject_certificate]
+      end
+
       ## この証明書の発行元になる CSR の指定
       def subject_request=(request)
         @certificates[:subject_request] = ZZZ::CA::Utils::x509_object(:request, request)
@@ -98,9 +106,13 @@ module ZZZ
 
       ## Extension の指定
       def add_extension(oid, values, critical = false, params ={})
-        params[:certificates] = @certificates
         extension = {oid => {:values => values, :critical => critical}}
         @extensions.merge!(extension)
+      end
+
+      def encode_extensions(params ={})
+        @certificates[:subject_certificate] ||= self.to_pem if @certificates.include?(:subject_certificate) and (self.class == ZZZ::CA::Certificate)
+        params[:certificates] = @certificates
         @x509.extensions = ZZZ::CA::Utils::encode_extensions(@extensions, params)
       end
 
@@ -108,10 +120,12 @@ module ZZZ
       def sign(type, signer = self, params = {})
         case type
         when :certificate
+          self.encode_extensions
           self.serial = params[:serial]
           self.issuer = signer.subject
         when :request
         when :crl
+          self.encode_extensions
           self.issuer = signer.subject
         else
           raise ZZZ::CA::Error

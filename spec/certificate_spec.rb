@@ -411,7 +411,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       extension_factory.subject_request = request
       extensions << extension_factory.create_ext('subjectKeyIdentifier', 'hash', false)
       ZZZ::CA::Utils.should_receive(:encode_extensions)
-                    .exactly(3).times
+                    .exactly(1).times
                     .and_return(extensions)
       ZZZ::CA::Utils.stub!(:encode_subject)
                     .and_return(@ca_name)
