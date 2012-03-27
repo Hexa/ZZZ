@@ -15,7 +15,7 @@ module ZZZ
       def method_missing(name, *args)
         case name
         when :last_update=, :next_update=
-          datetime = CA::Utils::encode_datetime(args[0])
+          datetime = ZZZ::CA::Utils::encode_datetime(args[0])
           @x509.__send__(name, datetime)
         else
           super
@@ -24,7 +24,7 @@ module ZZZ
 
       ## PEM 形式の CRL の指定
       def crl=(pem_or_der)
-        @x509 = CA::Utils::x509_object(:crl, pem_or_der)
+        @x509 = ZZZ::CA::Utils::x509_object(:crl, pem_or_der)
       end
 
       ## CRL (OpenSSL::X509::CRL オブジェクト) の取得
@@ -48,14 +48,12 @@ module ZZZ
 
       private
       def revoke(params)
-        serial = params[:serial]
-        revoked_time = params[:datetime]
         revoked = OpenSSL::X509::Revoked.new
-        revoked.serial = serial
-        revoked.time = ZZZ::CA::Utils::encode_datetime(revoked_time)
+        revoked.serial = params[:serial]
+        revoked.time = ZZZ::CA::Utils::encode_datetime(params[:datetime])
         unless params[:reason].nil?
           reason = params[:reason]
-          revoked_reason = CA::Utils::encode_extensions(
+          revoked_reason = ZZZ::CA::Utils::encode_extensions(
             'CRLReason' => {:values => [reason], :type => :enumerated})
           revoked.add_extension(revoked_reason)
         end
