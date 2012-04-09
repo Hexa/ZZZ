@@ -89,7 +89,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
         name
       end
       e = (0x21..0x7e).to_a.map {|e| e.chr }
-      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
       @server_name = l.call([{'CN' => cn}])
 
       ## "subjectAltName", "DNS:foo.example.com"
@@ -194,9 +194,9 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       end
 
       e = (0x21..0x7e).to_a.map {|e| e.chr }
-      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
       @ca_name = l.call(@ca_subject = [{'CN' => cn}])
-      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
       @server_name = l.call(@server_subject = [{'CN' => cn}])
 
       ZZZ::CA::Utils.should_receive(:new)
@@ -236,7 +236,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
     end
 
     it "#private_key=nil の場合は例外を発生させること" do
-      -> { @certificate.private_key = nil }.should raise_error ZZZ::CA::Error
+      -> { @certificate.private_key = nil }.should raise_error ZZZ::CA::CertificateError
     end
 
     it "#private_key=rsa_private_key （不正な PEM）を指定した場合は例外を発生させること" do
@@ -255,7 +255,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.encrypted_private_key(:algorithm => 'AES-256-CBC', :passphrase => 'pass').should =~ /^-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-256-CBC,.+-----END RSA PRIVATE KEY-----$/m
     end
 
-    it "#not_before='2011/09/01 00:00:00 +0900' を指定した後の #not_before は '2011/09/01 00:00:00 +0900' の Time オブジェクトを返すこと" do
+    it "#not_before='2011/09/01 00:00:00 +0900' (String オブジェクト) を指定した後の #not_before は '2011/09/01 00:00:00 +0900' の Time オブジェクトを返すこと" do
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_before)
                     .and_return(Time.parse(@not_before))
@@ -263,12 +263,13 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.not_before.should == Time.parse(@not_before)
     end
 
-    it "#not_after='2011/09/30 00:00:00 +0900' を指定した後の #not_after は '2011/09/30 00:00:00 +0900' の Time オブジェクトを返すこと" do
-      ZZZ::CA::Utils.should_receive(:encode_datetime)
-                    .with(@not_after)
-                    .and_return(Time.parse(@not_after))
-      @certificate.not_after = @not_after
+    it "#not_after='2011/09/30 00:00:00 +0900' (Time オブジェクト) を指定した後の #not_after は '2011/09/30 00:00:00 +0900' の Time オブジェクトを返すこと" do
+      @certificate.not_after = Time.parse(@not_after)
       @certificate.not_after.should == Time.parse(@not_after)
+    end
+
+    it "#not_after=2011 は ZZZ::CA::CertificateError を返すこと" do
+      -> { @certificate.not_after = 2011 }.should raise_error ZZZ::CA::CertificateError
     end
 
     it "#sign は ZZZ::CA::Certificate オブジェクトを返すこと" do
@@ -285,6 +286,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(@ca_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
+      ZZZ::CA::Utils.stub!(:get_digest)
+                    .and_return(OpenSSL::Digest.new('SHA1'))
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @ca_subject.each do |e|
@@ -311,6 +314,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(@ca_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
+      ZZZ::CA::Utils.stub!(:get_digest)
+                    .and_return(OpenSSL::Digest.new('SHA1'))
       params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
@@ -341,6 +346,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(@server_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
+      ZZZ::CA::Utils.stub!(:get_digest)
+                    .and_return(OpenSSL::Digest.new('SHA1'))
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
       @server_subject.each do |e|
@@ -374,6 +381,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(@ca_name)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
+      ZZZ::CA::Utils.stub!(:get_digest)
+                    .and_return(OpenSSL::Digest.new('SHA1'))
       params = {:key_size => 1024, :exponent => 3, :public_key_algorithm => :DSA}
       @certificate.not_before = @not_before
       @certificate.not_after = @not_after
@@ -404,6 +413,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
                     .and_return(request)
       ZZZ::CA::Utils.stub!(:gen_pkey)
                     .and_return(@dsa_private_key)
+      ZZZ::CA::Utils.stub!(:get_digest)
+                    .and_return(OpenSSL::Digest.new('SHA1'))
       extensions = []
       extension_factory = OpenSSL::X509::ExtensionFactory.new
       extensions << extension_factory.create_ext('basicConstraints', 'CA:TRUE, pathlen:1', true)
@@ -512,30 +523,18 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       ZZZ::CA::Certificate.pkcs12(@passphrase, certificate, @rsa_private_key).should be_instance_of OpenSSL::PKCS12
     end
 
-    it "::pkcs12(passphrase, certificate) は OpenSSL::PKCS12::PKCS12Error を返すこと" do
-      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
-      certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
-      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, certificate) }.should raise_error OpenSSL::PKCS12::PKCS12Error
-    end
-
     it "::pkcs12(passphrase, certificate, private_key) は OpenSSL::PKCS12 を返すこと" do
       certificate = ZZZ::CA::Certificate.new(@certificate_pem)
       ZZZ::CA::Certificate.pkcs12(@passphrase, certificate, @rsa_private_key).should be_instance_of OpenSSL::PKCS12
     end
 
-    it "::pkcs12(passphrase, certificate) は OpenSSL::PKCS12 を返すこと" do
-      certificate = ZZZ::CA::Certificate.new(@certificate_pem)
-      certificate.private_key = @rsa_private_key
-      ZZZ::CA::Certificate.pkcs12(@passphrase, certificate).should be_instance_of OpenSSL::PKCS12
+    it "::pkcs12(passphrase, 'invalid_object', rsa_private_key) は ZZZ::CA::CertificateError を返すこと" do
+      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, 'invalid_object', @rsa_private_key) }.should raise_error ZZZ::CA::CertificateError
     end
 
-    it "::pkcs12(passphrase, certificate) は ZZZ::CA::Error を返すこと" do
+    it "::pkcs12(passphrase, certificate, 'invalid_object') は OpenSSL::PKCS12Error を返すこと" do
       certificate = ZZZ::CA::Certificate.new(@certificate_pem)
-      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, certificate) }.should raise_error ZZZ::CA::Error
-    end
-
-    it "::pkcs12(passphrase, 'string') は ZZZ::CA::Error を返すこと" do
-      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, 'string') }.should raise_error ZZZ::CA::Error
+      -> { ZZZ::CA::Certificate.pkcs12(@passphrase, certificate, 'invalide_object') }.should raise_error TypeError
     end
 
     after do

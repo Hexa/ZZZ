@@ -4,6 +4,12 @@ require 'zzz/ca/x509'
 
 module ZZZ
   module CA
+    class CertificateError < RuntimeError; end
+  end
+end
+
+module ZZZ
+  module CA
     class Certificate < X509
 
       ## デフォルトの証明書発行時のシリアル番号
@@ -58,28 +64,23 @@ module ZZZ
           end
         end
 
+        ## CSR の Attributes から Ext を取得
         def find_ext_request(request)
           attributes =  request.attributes
-          attribute = attributes.find do |attribute|
-            attribute if attribute.oid == 'extReq'
-          end
+          attribute = attributes.find {|attribute| attribute.oid == 'extReq' }
 
-          return [] unless attribute
-          attribute.value.value[0]
+          attribute ? attribute.value.value[0] : []
         end
 
         ## PKCS#12 形式の証明書に変換
-        def pkcs12(passphrase, certificate, private_key = nil, name = '')
+        def pkcs12(passphrase, certificate, private_key, name = '')
           case certificate
           when OpenSSL::X509::Certificate
-            raise OpenSSL::PKCS12::PKCS12Error if private_key.nil?
             OpenSSL::PKCS12.create(passphrase, name, private_key, certificate)
           when ZZZ::CA::Certificate
-            private_key ||= certificate.private_key
-            raise ZZZ::CA::Error if private_key.nil?
             OpenSSL::PKCS12.create(passphrase, name, private_key, certificate.certificate)
           else
-            raise ZZZ::CA::Error
+            raise ZZZ::CA::CertificateError
           end
         end
       end
@@ -91,7 +92,14 @@ module ZZZ
       def method_missing(name, *args)
         case name
         when :not_before=, :not_after=
-          datetime = CA::Utils::encode_datetime(args[0])
+          datetime = case args[0].class.to_s
+                     when 'String'
+                       CA::Utils::encode_datetime(args[0])
+                     when 'Time'
+                       args[0]
+                     else
+                       raise ZZZ::CA::CertificateError
+                     end
           @x509.__send__(name, datetime)
         when :private_key, :pkey
           @private_key
@@ -111,7 +119,7 @@ module ZZZ
                        when OpenSSL::PKey::RSA, OpenSSL::PKey::DSA
                          private_key
                        else
-                         raise ZZZ::CA::Error
+                         raise ZZZ::CA::CertificateError
                        end
       end
 

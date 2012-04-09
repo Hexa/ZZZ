@@ -25,7 +25,7 @@ describe ZZZ::CA::Utils do
   context "時間をエンコードする場合" do
     it "::encode_datetime(\"2011/05/10 00:00:00\") は 2011/05/10 00:00:00 の Time オブジェクトを返すこと" do
       datetime = "2011/05/10 00:00:00"
-      ZZZ::CA::Utils::encode_datetime(datetime).should == Time.parse(datetime)
+      ZZZ::CA::Utils::encode_datetime(datetime).should be_eql Time.parse(datetime)
     end
   end
 
@@ -38,8 +38,8 @@ describe ZZZ::CA::Utils do
   context "秘密鍵を生成する場合" do
     it "::gen_pkey は DEFAULT の鍵長，Exponent，公開鍵のアルゴリズムの公開鍵を生成すること" do
       public_key = ZZZ::CA::Utils::gen_pkey({})
-      public_key.n.to_i.to_s(2).length.should == 1024
-      public_key.e.should == 65567
+      public_key.n.to_i.to_s(2).length.should be_eql 1024
+      public_key.e.should be_eql 65567
       public_key.should be_an_instance_of OpenSSL::PKey::RSA
     end
 
@@ -275,6 +275,23 @@ UPt704SNSQNfqQ==
 
     it "::verify_asn1(pem) は false を返すこと" do
       ZZZ::CA::Utils.verify_asn1(@certificate_pem).should be_false
+    end
+  end
+
+  context "証明書を失効させる場合" do
+    it "revoke_certificate(:serial =>1, :datetime => '2012/04/09 19:00:00') は OpenSSL::X509::Revoked を返すこと" do
+      params = {
+        :serial => 1,
+        :datetime => '2012/04/09 19:00:00'}
+      ZZZ::CA::Utils.revoke_certificate(params).should be_an_instance_of OpenSSL::X509::Revoked
+    end
+
+    it "revoke_certificate(:serial =>1, :datetime => '2012/04/09 19:00:00', :reason => 'cACompromise') は OpenSSL::X509::Revoked を返すこと" do
+      params = {
+        :serial => 1,
+        :datetime => '2012/04/09 19:00:00',
+        :reason => 'cACompromise'}
+      ZZZ::CA::Utils.revoke_certificate(params).should be_an_instance_of OpenSSL::X509::Revoked
     end
   end
 end

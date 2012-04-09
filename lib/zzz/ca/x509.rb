@@ -29,6 +29,7 @@ module ZZZ
       def initialize(type, pem = nil)
         @certificates = {}
         @extensions = {}
+        @subject = []
         @x509 = ZZZ::CA::Utils::new(type, pem)
       end
 
@@ -38,7 +39,6 @@ module ZZZ
 
       ## subject の指定
       def add_subject(oid, value)
-        @subject ||= []
         @subject << {oid => value}
         @x509.subject = ZZZ::CA::Utils::encode_subject(@subject)
       end
@@ -99,7 +99,7 @@ module ZZZ
       ## Extension の指定
       def extensions=(extensions, params = {})
         @extensions = extensions
-        extensions.each_pair do |oid, values|
+        extensions.each do |oid, values|
           add_extension(oid, values[:values], values[:critical] || false, params)
         end
       end
@@ -136,8 +136,10 @@ module ZZZ
 
       private
       def _sign(type, signer) # :nodoc:
-        digest = OpenSSL::Digest.new(self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM)
-        self.__send__(type).sign(signer.private_key, digest)
+        # digest = OpenSSL::Digest.new(self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM)
+        digest = ZZZ::CA::Utils::get_digest(self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM)
+        x509 = self.__send__(type)
+        x509.sign(signer.private_key, digest)
         self
       end
     end

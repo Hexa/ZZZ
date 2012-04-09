@@ -36,52 +36,52 @@ module ZZZ
         def new(type, pem = nil)
           case type
           when :certificate
-            pem.nil? ? OpenSSL::X509::Certificate.new : OpenSSL::X509::Certificate.new(pem)
+            eval("OpenSSL::X509::Certificate.new#{'(pem)' if pem}")
           when :request
-            pem.nil? ? OpenSSL::X509::Request.new : OpenSSL::X509::Request.new(pem)
+            eval("OpenSSL::X509::Request.new#{'(pem)' if pem}")
           when :crl
-            pem.nil? ? OpenSSL::X509::CRL.new : OpenSSL::X509::CRL.new(pem)
+            eval("OpenSSL::X509::CRL.new#{'(pem)' if pem}")
           else
             raise ZZZ::CA::Error
           end
         end
-       
+
         ## 日時のエンコード
         def encode_datetime(datetime)
           Time.parse(datetime)
         end
-       
+
         ## Extensions のエンコード
         def encode_extensions(extensions, params = {})
           extension_encoder = ZZZ::CA::ExtensionEncoder.new
-          extensions.each_pair do |oid, values|
+          extensions.each do |oid, values|
             critical = values[:critical] || false
-            type = values[:type]
             extension_encoder.add(
               :oid => oid,
               :values => values[:values],
               :critical => critical,
-              :type => type)
+              :type => values[:type])
           end
-       
+
           certificates = params[:certificates] || {}
-          certificates.each_pair.each do |key, certificate|
+          certificates.each do |key, certificate|
             extension_encoder.__send__("#{key}=".to_sym, certificate)
           end
        
           extension_encoder.encode
         end
-       
+
         ## DN のエンコード
         def encode_subject(subject)
-          ZZZ::CA::SubjectEncoder.new(subject).encode
+          subject_encoder = ZZZ::CA::SubjectEncoder.new(subject)
+          subject_encoder.encode
         end
-       
+
         ## OpenSSL::Cipher オブジェクトの生成
         def cipher(algorithm)
           OpenSSL::Cipher::Cipher.new(algorithm)
         end
-       
+
         ## PEM 形式の秘密鍵からの OpenSSL::PKey オブジェクトの生成　
         def pkey_object(private_key)
           case private_key
@@ -93,7 +93,7 @@ module ZZZ
             raise ZZZ::CA::Error
           end
         end
-       
+
         ## PEM または DER からの OpenSSL::X509 オブジェクトの生成
         def x509_object(type, pem_or_der)
           case type
@@ -104,10 +104,28 @@ module ZZZ
           when :crl
             OpenSSL::X509::CRL.new(pem_or_der)
           else
-            raise ZZZ::CA::Error, "#{__LINE__}: Unsupported type: #{type}"
+            raise ZZZ::CA::Error, "Unsupported type: #{type}"
           end
         end
-       
+
+        ## 証明書の失効
+        def revoke_certificate(params)
+          revoked = OpenSSL::X509::Revoked.new
+          revoked.serial = params[:serial]
+          revoked.time = ZZZ::CA::Utils::encode_datetime(params[:datetime])
+          ZZZ::CA::Utils::set_reason(revoked, params[:reason])
+          revoked
+        end
+
+        ## 失効理由を指定
+        def set_reason(revoked, reason)
+          if reason
+            revoked_reason = ZZZ::CA::Utils::encode_extensions(
+              'CRLReason' => {:values => [reason], :type => :enumerated})
+            revoked.add_extension(revoked_reason)
+          end
+        end
+
         ## str が ASN1 であるかの確認
         def verify_asn1(der)
           begin
@@ -116,6 +134,10 @@ module ZZZ
           rescue
             false
           end
+        end
+
+        def get_digest(algorithm)
+          OpenSSL::Digest.new(algorithm)
         end
       end
     end

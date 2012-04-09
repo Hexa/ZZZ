@@ -65,6 +65,13 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       e = (0x21..0x7e).to_a.map {|e| e.chr }
       cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
       @name = l.call(@subject = [{'CN' => cn}])
+      ZZZ::CA::Utils.should_receive(:encode_subject).with(@subject).and_return(@name)
+
+      @subject.each do |e|
+        e.each_pair do |oid, value|
+          @request.add_subject(oid, value)
+        end
+      end
     end
 
     it "#private_key=dsa_private_key （PEM）を指定した後の #private_key は OpenSSL::PKey::DSA オブジェクトを返すこと" do
@@ -81,7 +88,7 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
     end
 
     it "#private_key= に不正な値を指定した場合は例外を発生させること" do
-      -> { @request.private_key = nil }.should raise_error ZZZ::CA::Error
+      -> { @request.private_key = nil }.should raise_error ZZZ::CA::RequestError
     end
 
     it "#sign は ZZZ::CA::Request オブジェクトを返すこと" do
@@ -89,14 +96,6 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with(params)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@subject)
-                    .and_return(@name)
-      @subject.each do |e|
-        e.each_pair do |oid, value|
-          @request.add_subject(oid, value)
-        end
-      end
       @request.gen_private_key(params)
       @request.sign.should be_an_instance_of ZZZ::CA::Request
     end
@@ -106,22 +105,15 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with(params)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@subject)
-                    .and_return(@name)
-      @subject.each do |e|
-        e.each_pair do |oid, value|
-          @request.add_subject(oid, value)
-        end
-      end
       @request.gen_private_key(params)
       @request.sign(:version => 0)
-      @request.version.should == 0
+      @request.version.should be_eql 0
     end
 
     it "#signature_algorithm は #signature_algorithm= で指定したアルゴリズムを返すこと" do
-      @request.signature_algorithm = 'MD5'
-      @request.signature_algorithm.should == 'MD5'
+      algorithm = 'MD5'
+      @request.signature_algorithm = algorithm
+      @request.signature_algorithm.should be_eql algorithm
     end
 
     it "#signature_algorithm は署名に使用したアルゴリズムを返すこと" do
@@ -129,17 +121,10 @@ kqgWcEQ1Y+kA7b85hBwmiWggUt6b073/Sg4PWXrkB40=
       ZZZ::CA::Utils.should_receive(:gen_pkey)
                     .with(params)
                     .and_return(@dsa_private_key)
-      ZZZ::CA::Utils.should_receive(:encode_subject)
-                    .with(@subject)
-                    .and_return(@name)
-      @subject.each do |e|
-        e.each_pair do |oid, value|
-          @request.add_subject(oid, value)
-        end
-      end
+      @request.signature_algorithm = 'SHA1'
       @request.gen_private_key(params)
       @request.sign
-      @request.signature_algorithm.should == 'dsaWithSHA1'
+      @request.signature_algorithm.should be_eql 'dsaWithSHA1'
     end
 
     it "#request= request （PEM）を指定した後の #request は OpenSSL::X509::Request オブジェクトを返すこと" do

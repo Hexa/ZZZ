@@ -4,6 +4,12 @@ require 'zzz/ca/x509'
 
 module ZZZ
   module CA
+    class CRLError < RuntimeError; end
+  end
+end
+
+module ZZZ
+  module CA
     class CRL < X509
       ## デフォルトの CRL のバージョン
       DEFAULT_VERSION = VERSIONS[:CRLv2]
@@ -48,16 +54,7 @@ module ZZZ
 
       private
       def revoke(params)
-        revoked = OpenSSL::X509::Revoked.new
-        revoked.serial = params[:serial]
-        revoked.time = ZZZ::CA::Utils::encode_datetime(params[:datetime])
-        unless params[:reason].nil?
-          reason = params[:reason]
-          revoked_reason = ZZZ::CA::Utils::encode_extensions(
-            'CRLReason' => {:values => [reason], :type => :enumerated})
-          revoked.add_extension(revoked_reason)
-        end
-        revoked
+        ZZZ::CA::Utils::revoke_certificate(params)
       end
     end
   end

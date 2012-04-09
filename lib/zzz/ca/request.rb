@@ -6,6 +6,12 @@ require 'zzz/ca/x509'
 
 module ZZZ
   module CA
+    class RequestError < RuntimeError; end
+  end
+end
+
+module ZZZ
+  module CA
     class Request < X509
       ## デフォルトの CSR のバージョン
       DEFAULT_VERSION = ZZZ::CA::VERSIONS[:REQUESTv2]
@@ -31,7 +37,7 @@ module ZZZ
                        when 'OpenSSL::PKey::RSA', 'OpenSSL::PKey::DSA'
                          private_key
                        else
-                         raise ZZZ::CA::Error
+                         raise ZZZ::CA::RequestError
                        end
       end
 

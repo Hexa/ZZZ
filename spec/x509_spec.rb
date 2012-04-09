@@ -14,9 +14,9 @@ describe ZZZ::CA::X509 do
       end
 
       e = (0x21..0x7e).to_a.map {|e| e.chr }
-      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
       @ca_name = l.call(@ca_subject = [{'CN' => cn}])
-      cn = Array.new(rand(100)).map { e[rand(e.length)] }.join('')
+      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
       @server_name = l.call(@server_subject = [{'CN' => cn}])
     end
 

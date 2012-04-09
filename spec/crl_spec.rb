@@ -66,10 +66,16 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
 
 
     it "#add_revoked(:serial => 1, :datetime => \"2011/05/12 00:00:00\") は OpenSSL::X509::Revoked オブジェクトを返すこと" do
-      @crl.add_revoked(:serial => 1, :datetime => "2011/05/12 00:00:00").should be_an_instance_of OpenSSL::X509::Revoked
-    end
-
-    it "#private_key=(rsa_private_key) は OpenSSL::PKey::RSA オブジェクトを返すこと" do
+      params = {
+        :datetime => "2011/05/12 00:00:00",
+        :serial => 1}
+      revoked = OpenSSL::X509::Revoked.new
+      revoked.serial = 1
+      revoked.time = Time.parse("2011/05/12 00:00:00")
+      ZZZ::CA::Utils.should_receive(:revoke_certificate)
+                    .with(params)
+                    .and_return(revoked)
+      @crl.add_revoked(params).should be_an_instance_of OpenSSL::X509::Revoked
     end
 
     it "#last_update='2011/05/10 00:00:00' を指定した後の #last_update は '2010/09/21 00:00:00' の Time オブジェクトを返すこと" do
@@ -77,7 +83,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
                     .with(@last_update)
                     .and_return(Time.parse(@last_update))
       @crl.last_update = @last_update
-      @crl.last_update.should == Time.parse(@last_update)
+      @crl.last_update.should be_eql Time.parse(@last_update)
     end
 
     it "#next_update='2011/05/10 00:00:00' を指定した後の #next_update は '2010/09/21 00:00:00' の Time オブジェクトを返すこと" do
@@ -85,7 +91,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
                     .with(@next_update)
                     .and_return(Time.parse(@next_update))
       @crl.next_update = @next_update
-      @crl.next_update.should == Time.parse(@next_update)
+      @crl.next_update.should be_eql Time.parse(@next_update)
     end
 
     it "#sign(:signer => signer) は ZZZ::CA::CRL オブジェクトを返すこと" do
@@ -120,7 +126,7 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
                     .and_return(Time.parse(@next_update))
       @crl.next_update = @next_update
       @crl.sign(:signer => signer, :version => 0)
-      @crl.version.should == 0
+      @crl.version.should be_eql 0
     end
 
     it "#revoked(serial, time) は指定した serial の OpenSSL::X509::Revoked オブジェクトを返すこと" do
@@ -129,10 +135,10 @@ yn4M/nmsCAS2R1vrYOvtMzWWYeL7G3HtfPaCLUpM4/Lx
         revoked.serial = serial
         now = Time.now
         revoked.time = now
-        ZZZ::CA::Utils.should_receive(:encode_datetime)
-                      .with(now.to_s)
-                      .and_return(now)
-        @crl.add_revoked(:serial => serial, :datetime => now.to_s, :reason => 'cACompromise').serial.should == revoked.serial
+        ZZZ::CA::Utils.should_receive(:revoke_certificate)
+                      .with(:serial => serial, :datetime => now.to_s, :reason => 'cACompromise')
+                      .and_return(revoked)
+        @crl.add_revoked(:serial => serial, :datetime => now.to_s, :reason => 'cACompromise').serial.should be_eql revoked.serial
       end
     end
 

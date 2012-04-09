@@ -60,7 +60,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
 
     it '#show は追加されている oid, values を返すこと' do
       extension_encoder = ZZZ::CA::ExtensionEncoder.new(@extensions)
-      extension_encoder.show.should == @extensions
+      extension_encoder.show.should be_eql @extensions
     end
 
     it '#show は追加されている oid (番号で指定する), values を返すこと' do
@@ -70,12 +70,12 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
         '2.16.840.1.113730.1.13' => {
           :values => ['comment']}}
       extension_encoder = ZZZ::CA::ExtensionEncoder.new(extensions)
-      extension_encoder.show.should == extensions
+      extension_encoder.show.should be_eql extensions
     end
 
     it '#show は追加されている oid, values を返すこと' do
       @extensions['crlNumber'][:critical] = false
-      @extension_encoder.show.should == @extensions
+      @extension_encoder.show.should be_eql @extensions
     end
 
     it '#add は oid, value を追加すること' do
@@ -87,7 +87,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       extension_encoder = ZZZ::CA::ExtensionEncoder.new
       extension_encoder.add(:oid => 'basicConstraints', :values => ['CA:TRUE', 'pathlen:0'], :critical => false)
       extension_encoder.add(:oid => 'extendedKeyUsage', :values => ['TLS Web Server Authentication'])
-      extension_encoder.show.should == extensions
+      extension_encoder.show.should be_eql extensions
     end
 
     it '#delete は該当する oid を削除すること' do
@@ -97,7 +97,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.delete('keyUsage')
       @extension_encoder.delete('extendedKeyUsage')
       @extension_encoder.delete('crlNumber')
-      @extension_encoder.show.should == extensions
+      @extension_encoder.show.should be_eql extensions
     end
 
     it '#encode は add で追加した数の OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
@@ -116,8 +116,8 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.add(:oid => 'subjectKeyIdentifier', :values => ['hash'])
       @extension_encoder.encode.should be_an_instance_of Array
       @extension_encoder.encode[0].should be_an_instance_of OpenSSL::X509::Extension
-      @extension_encoder.encode.find {|extension| extension.oid == "authorityKeyIdentifier"}.oid.should == "authorityKeyIdentifier"
-      @extension_encoder.encode.find {|extension| extension.oid == "authorityKeyIdentifier"}.value.should == "keyid:07:50:4B:B0:24:B8:94:9D:EE:D3:1C:D7:BB:B7:A1:89:55:BC:38:C4\n"
+      @extension_encoder.encode.find {|extension| extension.oid == "authorityKeyIdentifier"}.oid.should be_eql "authorityKeyIdentifier"
+      @extension_encoder.encode.find {|extension| extension.oid == "authorityKeyIdentifier"}.value.should be_eql "keyid:07:50:4B:B0:24:B8:94:9D:EE:D3:1C:D7:BB:B7:A1:89:55:BC:38:C4\n"
     end
 
     it '#encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
@@ -125,8 +125,8 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.add(:oid => '2.5.29.37', :values => ['01101100'], :type => :bit_string)
       @extension_encoder.encode
       @extension_encoder.encoded_extensions[rand(4)].should be_an_instance_of OpenSSL::X509::Extension
-      @extension_encoder.encode.find {|extension| extension.oid == "basicConstraints"}.oid.should == "basicConstraints"
-      @extension_encoder.encode.find {|extension| extension.oid == "basicConstraints"}.value.should == "CA:TRUE, pathlen:0"
+      @extension_encoder.encode.find {|extension| extension.oid == "basicConstraints"}.oid.should be_eql "basicConstraints"
+      @extension_encoder.encode.find {|extension| extension.oid == "basicConstraints"}.value.should be_eql "CA:TRUE, pathlen:0"
     end
 
     it '#encoded_extensions は OpenSSL::X509::Extension オブジェクトの配列を返すこと' do
@@ -137,7 +137,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       @extension_encoder.encoded_extensions[1].should be_an_instance_of OpenSSL::X509::Extension
     end
 
-    it '#add で不正な ASN.1 型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
+    it '#add で不正な ASN.1 の型を指定した場合の #encode は ZZZ::CA::Error Exception を返すこと' do
       @extension_encoder.add(:oid => '2.16.840.1.113730.1.13', :values => ['comment'], :type => :aaa)
       -> { @extension_encoder.encode }.should raise_error( ZZZ::CA::Error )
     end
@@ -161,17 +161,17 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
       -> { @extension_encoder.subject_request = 1 }.should raise_error( ZZZ::CA::Error )
     end
 
-    it '#subject_certificate= で証明書 (PEM) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#subject_certificate= で証明書 (PEM) を指定した後の #subject_certificate は OpenSSL::X509::Certificate オブジェクトを返すこと' do
       @extension_encoder.subject_certificate = @certificate_pem
       @extension_encoder.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
     end
 
-    it '#subject_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #subject_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#subject_certificate= で証明書 (OpenSSL::X509::Certificate オブジェクト) を指定した後の #subject_certificate は OpenSSL::X509::Certificate オブジェクトを返すこと' do
       @extension_encoder.subject_certificate = OpenSSL::X509::Certificate.new(@certificate_pem)
       @extension_encoder.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
     end
 
-    it '#issuer_certificate= で証明書 (PEM) を指定した後の #issuer_certificate は OpenSSL::X509::Certificate を返すこと' do
+    it '#issuer_certificate= で証明書 (PEM) を指定した後の #issuer_certificate は OpenSSL::X509::Certificate オブジェクトを返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.issuer_certificate.should be_an_instance_of OpenSSL::X509::Certificate
     end
@@ -195,7 +195,7 @@ FPiXrLzArhOXX1ubOCbSBUCOIHMNovWLFWGZ6qA=
     it '#issuer_certificate= で証明書を指定した後の authorityKeyIdentifier を含んだ Extensions の #encode は authorityKeyIdentifier を含んだ配列を返すこと' do
       @extension_encoder.issuer_certificate = @certificate_pem
       @extension_encoder.add(:oid => 'authorityKeyIdentifier', :values => ['keyid'])
-      @extension_encoder.encode.find {|extension| extension.oid == 'authorityKeyIdentifier'}.oid.should  == 'authorityKeyIdentifier'
+      @extension_encoder.encode.find {|extension| extension.oid == 'authorityKeyIdentifier'}.oid.should be_eql 'authorityKeyIdentifier'
     end
 
     it '証明書 (OpenSSL::X509::Certificate オブジェクト) を指定する前の authorityKeyIdentifier = keyid が追加された #encode は OpenSSL::X509::ExtensionError Exception を返すこと' do
