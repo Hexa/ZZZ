@@ -18,14 +18,16 @@ module ZZZ
 
       ## OID の削除
       def delete(oid)
+        origin = @subject.dup
         @subject.map! {|dn| dn if dn[oid].nil? }.compact!
+        (origin - @subject)
       end
 
       ## DN のエンコード
       def encode
         @encoded_subject = OpenSSL::X509::Name.new
         @subject.each do |element|
-          element.each_pair do |oid, value|
+          element.each do |oid, value|
             @encoded_subject.add_entry(oid, value)
           end
         end

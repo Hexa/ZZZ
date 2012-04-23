@@ -71,41 +71,51 @@ module ZZZ
 
       ## Extensions のエンコード
       def encode
-        @extensions.each_pair do |key, elements|
+        @extensions.each do |key, elements|
           values = elements[:values]
           critical = elements[:critical] || false
-          case key
-          when 'authorityKeyIdentifier'
-            @encoded_extensions << encode_authority_key_identifier(key, values, critical)
-          when 'crlNumber'
-            @encoded_extensions << encode_crl_number(key, values, critical)
-          else
-            type = elements[:type] || :default
-            ## TODO: 指定したタイプごとの処理の追加
-            case type
-            when :bit_string
-              @encoded_extensions << encode_bit_string_type(key, values, critical)
-            when :enumerated
-              case key
-              when 'CRLReason'
-                @encoded_extensions = OpenSSL::X509::Extension.new(key, values[0])
-              else
-                ## TODO: OpenSSL::X509::ExtensionFactory にすべきか検討する
-                values.each do |value|
-                  @encoded_extensions << OpenSSL::X509::Extension.new(key, value, critical)
-                end
-              end
-            when :default
-              @encoded_extensions << @extension_factory.create_ext(oid(key), values.join(','), critical)
-            else
-              raise ZZZ::CA::Error
-            end
-          end
+          type = elements[:type] || :default
+
+          @encoded_extensions << case type
+                                 when :default
+                                   encode_ext_default(key, values, critical)
+                                 when :bit_string
+                                   encode_ext_bit_string(key, values, critical)
+                                 when :enumerated
+                                   encode_ext_enumerated(key, values, critical)
+                                 else
+                                   raise ZZZ::CA::Error
+                                 end
         end
         @encoded_extensions
       end
 
       private
+      def encode_ext_default(key, values, critical)
+        case key
+        when 'authorityKeyIdentifier'
+          encode_authority_key_identifier(values.join(','), critical)
+        when 'crlNumber'
+          encode_crl_number(values, critical)
+        else
+          encode_ext_other(key, values.join(','), critical)
+        end
+      end
+
+      def encode_ext_bit_string(key, values, critical)
+        encode_bit_string_type(key, values, critical)
+      end
+
+      def encode_ext_enumerated(key, values, critical)
+        case key
+        when 'CRLReason'
+          encode_crl_reqson(values[0])
+        else
+          ## TODO: OpenSSL::X509::ExtensionFactory にすべきか検討する
+          OpenSSL::X509::Extension.new(key, values[0], critical)
+        end
+      end
+
       ## BitString 型にエンコード
       def encode_bit_string_type(key, values, critical)
         encoded_values = ''
@@ -121,14 +131,23 @@ module ZZZ
       end
 
       ## crlNumber を ASN.1 形式にエンコード
-      def encode_crl_number(key, values, critical)
+      def encode_crl_number(values, critical)
         encoded_values = OpenSSL::ASN1::Integer(values[0]).to_der
-        OpenSSL::X509::Extension.new(key, encoded_values, critical)
+        OpenSSL::X509::Extension.new('crlNumber', encoded_values, critical)
       end
 
       ## authorityKeyIdentifier を ASN.1 形式にエンコード
-      def encode_authority_key_identifier(key, values, critical)
-        @extension_factory.create_ext(key, values.join(','), critical)
+      def encode_authority_key_identifier(values, critical)
+        @extension_factory.create_ext('authorityKeyIdentifier', values, critical)
+      end
+
+      ## CRLReason を ASN.1 形式にエンコード
+      def encode_crl_reqson(reason)
+         @encoded_extensions = OpenSSL::X509::Extension.new('CRLReason', reason)
+      end
+      
+      def encode_ext_other(key, value, critical)
+        @extension_factory.create_ext(oid(key), value, critical)
       end
     end
   end

@@ -30,27 +30,6 @@ module ZZZ
           certificate
         end
 
-        ## require 'openssl'
-        ## 
-        ## request = OpenSSL::X509::Request.new
-        ## factory = OpenSSL::X509::ExtensionFactory.new
-        ## exts = [
-        ##   factory.create_ext("subjectAltName", "DNS:foo.example.com"),
-        ##   factory.create_ext("subjectAltName", "DNS:bar.example.com")
-        ## ]
-        ## asn1exts = OpenSSL::ASN1::Set([OpenSSL::ASN1::Sequence(exts)])
-        ## request.add_attribute(OpenSSL::X509::Attribute.new('extReq', asn1exts))
-        ## attribute = ''
-        ## request.attributes.each do |_attribute|
-        ##   attribute = _attribute if _attribute.oid == 'extReq'
-        ## end
-        ## 
-        ## certificate = OpenSSL::X509::Certificate.new
-        ## extensions = []
-        ## attribute.value.value[0].each do |e|
-        ##   extensions << OpenSSL::X509::Extension.new(e.to_der)
-        ## end
-        ## certificate.extensions = extensions
         def find_extensions(request)
           extension_request = find_ext_request(request)
           extension_request.map do |extension|

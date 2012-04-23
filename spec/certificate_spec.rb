@@ -83,14 +83,8 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 
   context "" do
     before do
-      l = ->(subjects) do
-        name = OpenSSL::X509::Name.new
-        subjects.each {|e| e.each_pair {|key, value| name.add_entry(key, value) }}
-        name
-      end
-      e = (0x21..0x7e).to_a.map {|e| e.chr }
-      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
-      @server_name = l.call([{'CN' => cn}])
+      @server_name = OpenSSL::X509::Name.new
+      @server_name.add_entry('CN', 'example.com')
 
       ## "subjectAltName", "DNS:foo.example.com"
       ## "subjectAltName", "DNS:bar.example.com"
@@ -187,17 +181,13 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
 
   context "インスタンスを生成した場合" do
     before do
-      l = ->(subjects) do
-        name = OpenSSL::X509::Name.new
-        subjects.each {|e| e.each_pair {|key, value| name.add_entry(key, value) }}
-        name
-      end
+      @ca_subject = [{oid = 'CN'  => value = 'CA'}]
+      @ca_name = OpenSSL::X509::Name.new
+      @ca_name.add_entry(oid, value) 
 
-      e = (0x21..0x7e).to_a.map {|e| e.chr }
-      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
-      @ca_name = l.call(@ca_subject = [{'CN' => cn}])
-      cn = (1..rand(100)).map { e[rand(e.length)] }.join('')
-      @server_name = l.call(@server_subject = [{'CN' => cn}])
+      @server_subject = [{oid = 'CN'  => value = 'CA'}]
+      @server_name = OpenSSL::X509::Name.new
+      @server_name.add_entry(oid, value) 
 
       ZZZ::CA::Utils.should_receive(:new)
                     .at_least(:once)
@@ -481,6 +471,16 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.issuer_certificate.should be_an_instance_of OpenSSL::X509::Certificate
       @certificate.issuer_certificate.to_pem.should == @certificate_pem
     end
+
+    it "#subject_certificate は #subject_certificate = pem で指定した PEM 形式の証明書を返すこと" do
+      ZZZ::CA::Utils.should_receive(:x509_object)
+                    .with(:certificate, @certificate_pem)
+                    .and_return(OpenSSL::X509::Certificate.new(@certificate_pem))
+      @certificate.subject_certificate = @certificate_pem
+      @certificate.subject_certificate.should be_an_instance_of OpenSSL::X509::Certificate
+      @certificate.subject_certificate.to_pem.should == @certificate_pem
+    end
+
 
     it "#subject_request は #subject_request = pem で指定した PEM 形式の CSR を返すこと" do
       ZZZ::CA::Utils.should_receive(:x509_object)

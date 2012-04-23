@@ -15,8 +15,13 @@ describe ZZZ::CA::SubjectEncoder do
       @subject_encoder.add('CN', 'cn1').should be_eql [{'C' => 'JP'}, {'CN' => 'cn'}, {'CN' => 'cn1'}]
     end
 
-    it "#delete(oid) は oid 該当する要素を除いた {oid => value} の配列を返すこと" do
-      @subject_encoder.delete('C').should be_eql [{'CN' => 'cn'}]
+    it "#delete(oid) は oid に該当する要素の配列を返すこと" do
+      @subject_encoder.delete('C').should be_eql [{'C' => 'JP'}]
+    end
+
+    it "#delete(oid) 後の #subject は #delete で削除した要素を取り除いた配列を返すこと" do
+      @subject_encoder.delete('C')
+      @subject_encoder.subject.should be_eql [{'CN' => 'cn'}]
     end
 
     it "#encode は DN をエンコードした値（OpenSSL::X509::Name オブジェクト）を返すこと" do
@@ -51,8 +56,13 @@ describe ZZZ::CA::SubjectEncoder do
       @subject_encoder.add('CN', 'cn').should be_eql (@array << {'CN' => 'cn'})
     end
 
-    it "#delete(oid) は oid 該当する要素を除いた {oid => value} の配列を返すこと" do
-      @subject_encoder.delete('C').should be_eql [{'CN' => 'cn'}, {'CN' => 'cn'}]
+    it "#delete(oid) は oid に該当する要素の配列を返すこと" do
+      @subject_encoder.delete('C').should be_eql [{'C' => 'JP'}, {'C' => 'JP'}]
+    end
+
+    it "#delete(oid) 後の #subject は #delete で削除した要素を取り除いた配列を返すこと" do
+      @subject_encoder.delete('C')
+      @subject_encoder.subject.should be_eql [{'CN' => 'cn'}, {'CN' => 'cn'}]
     end
 
     it "#encode は DN をエンコードした値（OpenSSL::X509::Name オブジェクト）を返すこと" do
