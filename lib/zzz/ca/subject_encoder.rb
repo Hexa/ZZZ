@@ -19,7 +19,7 @@ module ZZZ
       ## OID の削除
       def delete(oid)
         origin = @subject.dup
-        @subject.map! {|dn| dn if dn[oid].nil? }.compact!
+        @subject.select! {|dn| dn if dn[oid].nil? }
         (origin - @subject)
       end
 

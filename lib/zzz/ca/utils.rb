@@ -108,6 +108,24 @@ module ZZZ
           end
         end
 
+        ## TODO: 名前の変更
+        def set_certificate(type, certificate)
+          case certificate.class.to_s
+          when 'OpenSSL::X509::Certificate', 'OpenSSL::X509::Request'
+            @certificates[type] = certificate
+          else
+            ## OpenSSL::X509 以外の場合
+            case type
+            when :issuer_certificate, :subject_certificate
+              ZZZ::CA::Utils::x509_object(:certificate, certificate)
+            when :subject_request
+              ZZZ::CA::Utils::x509_object(:request, certificate)
+            else
+              raise ZZZ::CA::Error, "Invalid type: #{type}"
+            end
+          end
+        end
+
         ## 証明書の失効
         def revoke_certificate(params)
           revoked = OpenSSL::X509::Revoked.new
