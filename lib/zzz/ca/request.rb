@@ -2,8 +2,6 @@
 
 require 'zzz/ca/x509'
 
-## TODO:: ca 以下でよいか
-
 module ZZZ
   module CA
     class RequestError < RuntimeError; end

@@ -31,10 +31,10 @@ REQUIREMENTS
 ============
 
 - ruby 1.9.3
-- OpenSSL 1.0.0
+- OpenSSL 1.0.1
 
 
 COPYRIGHT
 =========
 
-Copyright (c) 2011 Hiroshi Yoshida <hexa.diary@gmail.com>. See LICENSE for details.
+Copyright (c) 2011, 2012 Hiroshi Yoshida <hexa.diary@gmail.com>. See LICENSE for details.

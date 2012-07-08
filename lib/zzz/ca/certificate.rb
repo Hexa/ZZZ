@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+#
+# 証明書を発行するクラスライブラリ
+#
 require 'zzz/ca/x509'
 
 module ZZZ
@@ -11,7 +14,6 @@ end
 module ZZZ
   module CA
     class Certificate < X509
-
       ## デフォルトの証明書発行時のシリアル番号
       DEFAULT_SERIAL = 1
       ## デフォルトの証明書のバージョン（X509v3）
@@ -20,7 +22,7 @@ module ZZZ
       class << self
         ## ZZZ::CA::Request から ZZZ::CA::Certificate への移行
         def set_request(request)
-          certificate = Certificate.new
+          certificate = ZZZ::CA::Certificate.new
           certificate.private_key = request.private_key
           certificate.public_key = request.public_key
           certificate.subject = request.subject
@@ -34,11 +36,11 @@ module ZZZ
           extension_request = find_ext_request(request)
           extension_request.map do |extension|
             extensions = {}
-            e = OpenSSL::X509::Extension.new(extension.to_der)
-            oid = e.oid
+            oid = ZZZ::CA::Utils.get_oid_from_extension(extension)
+            value = ZZZ::CA::Utils.get_value_from_extension(extension)
             extensions[oid] ||= {}
             extensions[oid][:values] ||= []
-            extensions[oid][:values] << e.value
+            extensions[oid][:values] << value
             extensions
           end
         end
@@ -59,7 +61,7 @@ module ZZZ
           when ZZZ::CA::Certificate
             OpenSSL::PKCS12.create(passphrase, name, private_key, certificate.certificate)
           else
-            raise ZZZ::CA::CertificateError
+            raise ZZZ::CA::CertificateError, "Invalid certificate: #{certificate}"
           end
         end
       end
@@ -71,13 +73,13 @@ module ZZZ
       def method_missing(name, *args)
         case name
         when :not_before=, :not_after=
-          datetime = case args[0].class.to_s
-                     when 'String'
-                       CA::Utils::encode_datetime(args[0])
-                     when 'Time'
+          datetime = case args[0]
+                     when String
+                       ZZZ::CA::Utils::encode_datetime(args[0])
+                     when Time
                        args[0]
                      else
-                       raise ZZZ::CA::CertificateError
+                       raise ZZZ::CA::CertificateError, "Invalid datetime: #{datetime}"
                      end
           @x509.__send__(name, datetime)
         when :private_key, :pkey
@@ -91,14 +93,13 @@ module ZZZ
 
       ## 秘密鍵の指定
       def private_key=(private_key)
-        ## TODO: 書き直す
         @private_key = case private_key
                        when String
-                         CA::Utils::pkey_object(private_key)
+                         ZZZ::CA::Utils::pkey_object(private_key)
                        when OpenSSL::PKey::RSA, OpenSSL::PKey::DSA
                          private_key
                        else
-                         raise ZZZ::CA::CertificateError
+                         raise ZZZ::CA::CertificateError, "Invalid private_key: #{private_key}"
                        end
       end
 

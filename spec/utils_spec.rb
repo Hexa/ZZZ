@@ -240,6 +240,32 @@ UPt704SNSQNfqQ==
     end
   end
 
+  context "Extension から情報を取得する場合" do
+    before do
+      ## "subjectAltName", "DNS:foo.example.com"
+      ## "subjectAltName", "DNS:bar.example.com"
+      subject_alt_name1 = ["301a0603551d1104133011820f666f6f2e6578616d706c652e636f6d"].pack('H*')
+      subject_alt_name2 = ["301a0603551d1104133011820f6261722e6578616d706c652e636f6d"].pack('H*')
+      @subject_alt_name1 = OpenSSL::X509::Extension.new(subject_alt_name1)
+      @subject_alt_name2 = OpenSSL::X509::Extension.new(subject_alt_name2)
+    end
+
+    it "::get_oid_from_extension(extension) は引数に指定した extension の OID を返すこと" do
+      ZZZ::CA::Utils.get_oid_from_extension(@subject_alt_name1).should be_eql "subjectAltName"
+      ZZZ::CA::Utils.get_oid_from_extension(@subject_alt_name2).should be_eql "subjectAltName"
+    end
+
+    it "::get_value_from_extension(extension) は引数に指定した extension の Value を返すこと" do
+      ZZZ::CA::Utils.get_value_from_extension(@subject_alt_name1).should be_eql "DNS:foo.example.com"
+      ZZZ::CA::Utils.get_value_from_extension(@subject_alt_name2).should be_eql "DNS:bar.example.com"
+    end
+
+    after do
+      @subject_alt_name1 = nil
+      @subject_alt_name2 = nil
+    end
+  end
+
   context "Subject をエンコードする場合" do
     it "::encode_subject([{'CN' => 'example.com'}]) は OpenSSL::X509::Name オブジェクトを返すこと" do
       ZZZ::CA::Utils.encode_subject([{'CN' => 'example.com'}]).should be_an_instance_of OpenSSL::X509::Name

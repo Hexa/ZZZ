@@ -21,10 +21,10 @@ module ZZZ
       def method_missing(name, *args)
         case name
         when :last_update=, :next_update=
-          datetime = case args[0].class.to_s
-                     when 'String'
+          datetime = case args[0]
+                     when String
                        ZZZ::CA::Utils::encode_datetime(args[0])
-                     when 'Time'
+                     when Time
                        args[0]
                      else
                        raise ZZZ::CA::CRLError

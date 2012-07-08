@@ -28,22 +28,31 @@ module ZZZ
           when :DSA
             OpenSSL::PKey::DSA.new(key_size, exponent)
           else
-            raise ZZZ::CA::Error
+            raise ZZZ::CA::Error, "Unsupported public_key_algorithm: #{public_key_algorithm}"
           end
         end
-       
+
+        X509_CLASS_NAMES = {
+          :certificate => 'Certificate',
+          :request => 'Request',
+          :crl => 'CRL'}
+
         ## OpenSSL::X509 オブジェクトの生成
         def new(type, pem = nil)
           case type
-          when :certificate
-            eval("OpenSSL::X509::Certificate.new#{'(pem)' if pem}")
-          when :request
-            eval("OpenSSL::X509::Request.new#{'(pem)' if pem}")
-          when :crl
-            eval("OpenSSL::X509::CRL.new#{'(pem)' if pem}")
+          when :certificate, :request, :crl
+            pem ? gen_x509_with_args(type, pem) : gen_x509_without_args(type)
           else
-            raise ZZZ::CA::Error
+            raise ZZZ::CA::Error, "Invalid type :#{type}"
           end
+        end
+
+        def gen_x509_with_args(type, pem)
+          eval("OpenSSL::X509::#{X509_CLASS_NAMES[type]}.new(pem)")
+        end
+
+        def gen_x509_without_args(type)
+          eval("OpenSSL::X509::#{X509_CLASS_NAMES[type]}.new")
         end
 
         ## 日時のエンコード
@@ -67,8 +76,20 @@ module ZZZ
           certificates.each do |key, certificate|
             extension_encoder.__send__("#{key}=".to_sym, certificate)
           end
-       
+
           extension_encoder.encode
+        end
+
+        ## OID の取得
+        def get_oid_from_extension(extension)
+          der = extension.to_der
+          OpenSSL::X509::Extension.new(extension).oid
+        end
+
+        ## Value の取得
+        def get_value_from_extension(extension)
+          der = extension.to_der
+          OpenSSL::X509::Extension.new(extension).value
         end
 
         ## DN のエンコード
@@ -90,7 +111,7 @@ module ZZZ
           when /^-----BEGIN DSA PRIVATE KEY-----/
             OpenSSL::PKey::DSA.new(private_key)
           else
-            raise ZZZ::CA::Error
+            raise ZZZ::CA::Error, "Unsupported private_key: #{private_key}"
           end
         end
 
@@ -110,8 +131,8 @@ module ZZZ
 
         ## TODO: 名前の変更
         def set_certificate(type, certificate)
-          case certificate.class.to_s
-          when 'OpenSSL::X509::Certificate', 'OpenSSL::X509::Request'
+          case certificate
+          when OpenSSL::X509::Certificate, OpenSSL::X509::Request
             @certificates[type] = certificate
           else
             ## OpenSSL::X509 以外の場合

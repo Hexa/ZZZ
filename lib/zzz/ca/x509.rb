@@ -20,10 +20,26 @@ module ZZZ
     PUBLIC_KEY_ALGORITHMS[:DSA] ||= :DSA
 
     class X509
+      class << self
+        ## Extension 等に使用する証明書の setter と getter の定義
+        def ext_certificates_register(*names)
+          names.each do |name|
+            define_method(name) do
+              @certificates[name]
+            end
+
+            define_method(:"#{name}=") do |args|
+              @certificates[name] = ZZZ::CA::Utils::set_certificate(name, args)
+            end
+          end
+        end
+      end
+
       ## 証明書や CRL に署名するためのデフォルトのアルゴリズム
       DEFAULT_SIGNATURE_ALGIRITHM = ZZZ::CA::SIGNATURE_ALGORITHMS[:SHA1]
 
       attr_writer :signature_algorithm
+      ext_certificates_register :issuer_certificate, :subject_certificate, :subject_request
 
       ## 引数 type には生成するインスタンスを指定
       def initialize(type, pem = nil)
@@ -68,34 +84,6 @@ module ZZZ
         end
       end
 
-      ## 証明書や CRL の Extensions で使用する、この証明書の発行者の証明書の指定
-      def issuer_certificate=(certificate)
-        @certificates[:issuer_certificate] = ZZZ::CA::Utils::set_certificate(:issuer_certificate, certificate)
-      end
-
-      ## 証明書や CRL の Extensions で使用する、この証明書の発行者の証明書取得
-      def issuer_certificate
-        @certificates[:issuer_certificate]
-      end
-
-      def subject_certificate=(certificate)
-        @certificates[:subject_certificate] = ZZZ::CA::Utils::set_certificate(:subject_certificate, certificate)
-      end
-
-      def subject_certificate
-        @certificates[:subject_certificate]
-      end
-
-      ## この証明書の発行元になる CSR の指定
-      def subject_request=(request)
-        @certificates[:subject_request] = ZZZ::CA::Utils::set_certificate(:subject_request, request)
-      end
-
-      ## この証明書の発行元になる CSR の取得
-      def subject_request
-        @certificates[:subject_request]
-      end
-
       ## Extension の指定
       def extensions=(extensions, params = {})
         @extensions = extensions
@@ -136,7 +124,6 @@ module ZZZ
 
       private
       def _sign(type, signer) # :nodoc:
-        # digest = OpenSSL::Digest.new(self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM)
         digest = ZZZ::CA::Utils::get_digest(self.signature_algorithm || DEFAULT_SIGNATURE_ALGIRITHM)
         x509 = self.__send__(type)
         x509.sign(signer.private_key, digest)

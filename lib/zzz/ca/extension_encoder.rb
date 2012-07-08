@@ -26,7 +26,7 @@ module ZZZ
                             when OpenSSL::X509::Request
                               request
                             else
-                              raise ZZZ::CA::Error
+                              raise ZZZ::CA::Error, "Unexpected subject_request: #{request}"
                             end
           @extension_factory.__send__(name, subject_request)
         when :subject_certificate=, :issuer_certificate=
@@ -37,7 +37,7 @@ module ZZZ
                         when OpenSSL::X509::Certificate
                           cert
                         else
-                          raise ZZZ::CA::Error
+                          raise ZZZ::CA::Error, "Unexpected certifiacte: #{certificate}"
                         end
           @extension_factory.__send__(name, certificate)
         else
@@ -84,7 +84,7 @@ module ZZZ
                                  when :enumerated
                                    encode_ext_enumerated(key, values, critical)
                                  else
-                                   raise ZZZ::CA::Error
+                                   raise ZZZ::CA::Error, "Unsupported type: #{type}"
                                  end
         end
         @encoded_extensions
