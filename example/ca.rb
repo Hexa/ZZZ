@@ -10,11 +10,9 @@ certificate.gen_private_key(:key_size => 2048,
 certificate.not_before = Time.now.to_s
 certificate.not_after = '2012/01/01 09:00:00 +0900'
 certificate.add_subject('CN', 'example.com')
+certificate.subject_certificate = certificate.to_pem
 certificate.add_extension('basicConstraints', ['CA:TRUE'], true)
 certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
+certificate.add_extension('subjectKeyIdentifier', ['hash'])
 certificate.sign(:serial => 1)
-File.open('ca.pem', 'wb') do |file|
-  file.puts certificate.to_text
-  file.puts certificate.to_pem
-  file.puts certificate.private_key.to_pem
-end
+puts certificate.to_text
