@@ -5,9 +5,9 @@ require "rspec/core/rake_task"
 APP_NAME = "ZZZ"
 AUTHORS = ["Hexa"]
 HOMEPAGE = "http://github.com/Hexa/ZZZ"
-SUMMARY = "ZZZ is a certificate and crl issue library for the ssl application."
+SUMMARY = "ZZZ is a liblary for issuing a certificate."
 DESCRIPTION = <<-EOF
-ZZZ is a certificate and crl issue library for the ssl application.
+ZZZ is a liblary for issuing a certificate.
 EOF
 MAIL = "hexa.diary@gmail.com"
 LIB = "lib"
@@ -66,7 +66,7 @@ directory PKG
 desc "Generate package"
 task :build => :gemspec do
   sh "gem build #{APP_NAME}.gemspec"
-  mkdir PKG unless File.exists?(PKG)
+  mkdir PKG unless Dir.exists?(PKG)
   mv "#{APP_NAME}-#{PKG_VERSION}.gem", PKG
 end
 
