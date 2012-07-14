@@ -27,7 +27,5 @@ crl.add_revoked(:serial => 3, :datetime => Time.now.to_s,
                               :reason => 'cACompromise')
 
 crl.sign(:signer => certificate)
-
-
 puts crl.to_text
 puts crl.to_pem

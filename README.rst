@@ -31,7 +31,6 @@ REQUIREMENTS
 ============
 
 - ruby 1.9.3
-- OpenSSL 1.0.1
 
 
 COPYRIGHT

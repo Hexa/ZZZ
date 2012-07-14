@@ -16,3 +16,4 @@ certificate.add_extension('keyUsage', ['keyCertSign', 'cRLSign'])
 certificate.add_extension('subjectKeyIdentifier', ['hash'])
 certificate.sign(:serial => 1)
 puts certificate.to_text
+puts certificate.to_pem
