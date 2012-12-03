@@ -395,7 +395,7 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
       @certificate.signature_algorithm.should == 'dsaWithSHA1'
     end
 
-    it "#extension = extensions を指定して、署名した後の証明書は指定した extension を含んでいること" do
+    it "#extension = extensions を指定して署名した後の証明書は、指定した extension を含んでいること" do
       ZZZ::CA::Utils.should_receive(:encode_datetime)
                     .with(@not_before)
                     .and_return(Time.parse(@not_before))
@@ -443,7 +443,9 @@ B1979IiYO3XGSpf48FGrzSAwTlYYs7OUNgDDO9qx2gxSIuM61+r8ywIVAJFvj/9B
         'subjectKeyIdentifier' => {
           :values => ['hash'], :critical => false, :invalid => false}}
       @certificate.sign(:serial => 1)
-      @certificate.extensions.to_s.should == extensions.to_s
+      @certificate.extensions.map.with_index do |extension, i|
+        extension.to_s.should == extensions[i].to_s
+      end
     end
 
     it do
