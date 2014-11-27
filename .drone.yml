@@ -1,4 +1,4 @@
-image: bradrydzewski/ruby:2.0.0
+image: bradrydzewski/ruby
 script:
   - gem install rspec simplecov simplecov-rcov
   - rake spec
