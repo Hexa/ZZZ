@@ -1,6 +1,4 @@
 image: bradrydzewski/ruby:2.0.0
-env:
-  - GOPATH=/var/cache/drone
 script:
   - gem install rspec simplecov simplecov-rcov
   - rake spec
